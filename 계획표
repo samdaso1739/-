@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>오늘의 계획 체크리스트</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 30px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background-color: white;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    .input-area {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button {
+      padding: 12px 15px;
+      font-size: 15px;
+      border: none;
+      border-radius: 8px;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      background-color: #f1f1f1;
+      margin-bottom: 10px;
+      padding: 12px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .plan-text {
+      flex: 1;
+      margin-left: 10px;
+    }
+
+    .done {
+      text-decoration: line-through;
+      color: gray;
+    }
+
+    .delete-btn {
+      background-color: #ff5c5c;
+      margin-left: 10px;
+    }
+
+    .delete-btn:hover {
+      background-color: #e04848;
+    }
+
+    .result {
+      margin-top: 25px;
+      padding: 15px;
+      background-color: #e8f5e9;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .percent {
+      color: #2e7d32;
+      font-size: 24px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>오늘의 계획</h1>
+
+    <div class="input-area">
+      <input type="text" id="planInput" placeholder="오늘 할 계획을 입력하세요">
+      <button onclick="addPlan()">추가</button>
+    </div>
+
+    <ul id="planList"></ul>
+
+    <button onclick="calculatePercent()" style="width:100%; margin-top:15px;">
+      하루 실행률 확인하기
+    </button>
+
+    <div class="result" id="result">
+      아직 실행률을 확인하지 않았습니다.
+    </div>
+  </div>
+
+  <script>
+    let plans = JSON.parse(localStorage.getItem("plans")) || [];
+
+    function savePlans() {
+      localStorage.setItem("plans", JSON.stringify(plans));
+    }
+
+    function addPlan() {
+      const input = document.getElementById("planInput");
+      const planText = input.value.trim();
+
+      if (planText === "") {
+        alert("계획을 입력해주세요.");
+        return;
+      }
+
+      plans.push({
+        text: planText,
+        done: false
+      });
+
+      savePlans();
+      input.value = "";
+      showPlans();
+      calculatePercent();
+    }
+
+    document.getElementById("planInput").addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        addPlan();
+      }
+    });
+
+    function showPlans() {
+      const planList = document.getElementById("planList");
+      planList.innerHTML = "";
+
+      plans.forEach((plan, index) => {
+        const li = document.createElement("li");
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = plan.done;
+
+        checkbox.onchange = function() {
+          plans[index].done = checkbox.checked;
+          savePlans();
+          showPlans();
+          calculatePercent();
+        };
+
+        const span = document.createElement("span");
+        span.textContent = plan.text;
+        span.className = "plan-text";
+
+        if (plan.done) {
+          span.classList.add("done");
+          span.textContent = "✔ " + plan.text;
+        }
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "삭제";
+        deleteBtn.className = "delete-btn";
+
+        deleteBtn.onclick = function() {
+          plans.splice(index, 1);
+          savePlans();
+          showPlans();
+          calculatePercent();
+        };
+
+        li.appendChild(checkbox);
+        li.appendChild(span);
+        li.appendChild(deleteBtn);
+
+        planList.appendChild(li);
+      });
+    }
+
+    function calculatePercent() {
+      const result = document.getElementById("result");
+
+      if (plans.length === 0) {
+        result.innerHTML = "계획이 없습니다.";
+        return;
+      }
+
+      let doneCount = 0;
+
+      plans.forEach(plan => {
+        if (plan.done) {
+          doneCount++;
+        }
+      });
+
+      const percent = Math.round((doneCount / plans.length) * 100);
+
+      result.innerHTML = `
+        오늘 계획 ${plans.length}개 중 ${doneCount}개를 완료했습니다.<br>
+        실행률: <span class="percent">${percent}%</span>
+      `;
+    }
+
+    showPlans();
+    calculatePercent();
+  </script>
+</body>
+</html>
