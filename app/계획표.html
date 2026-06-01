@@ -2,13 +2,14 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>오늘의 퀴즈 & 계획 캘린더</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 코딩 테스트 & 오답노트 캘린더</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background-color: #f4f6f8;
       margin: 0;
-      padding: 30px;
+      padding: 20px; /* 모바일 대응을 위해 기본 패딩 소폭 축소 */
     }
 
     .container {
@@ -20,18 +21,43 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
-    h1, h2 {
+    h1, h2, h3 {
       text-align: center;
       color: #333;
     }
 
-    /* API 설정 영역 */
+    /* API 설정 및 언어/난이도 선택 영역 */
     .api-area {
       background-color: #f9f9f9;
       padding: 15px;
       border-radius: 8px;
       margin-bottom: 20px;
       border: 1px dashed #ccc;
+    }
+
+    .settings-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+
+    .settings-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .settings-row label {
+      font-weight: bold; 
+      width: 140px;
+    }
+
+    select, input {
+      flex: 1;
+      padding: 12px;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background-color: white;
     }
 
     /* 퀴즈 영역 */
@@ -43,9 +69,15 @@
     }
 
     .quiz-question {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: bold;
       margin-bottom: 15px;
+      white-space: pre-wrap;
+      background-color: #2d3748;
+      color: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: 'Courier New', Courier, monospace;
     }
 
     .quiz-options {
@@ -55,23 +87,54 @@
     }
 
     .quiz-opt-btn {
-      padding: 10px;
+      padding: 12px; /* 터치 영역 확대 */
       background-color: white;
       border: 1px solid #cbd5e0;
       border-radius: 6px;
       text-align: left;
       cursor: pointer;
       font-size: 15px;
-      transition: background 0.2s;
+      transition: background 0.2s, color 0.2s;
+      font-family: 'Courier New', Courier, monospace;
+      color: #2d3748 !important; 
     }
 
     .quiz-opt-btn:hover {
-      background-color: #e2e8f0;
+      background-color: #4a5568; 
+      color: white !important;    
     }
 
-    /* 달력 스타일 */
+    .quiz-explanation {
+      margin-top: 15px;
+      padding: 15px;
+      background-color: #fff;
+      border-left: 4px solid #4a5568;
+      border-radius: 4px;
+      font-size: 14px;
+      color: #4a5568;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    /* 달력 내비게이션 및 레이아웃 */
+    .calendar-nav-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .calendar-btn-group button {
+      padding: 8px 14px;
+      font-size: 14px;
+      background-color: #4a5568;
+    }
+    .calendar-btn-group button:hover {
+      background-color: #2d3748;
+    }
+
     .calendar-container {
-      margin-top: 30px;
+      margin-top: 10px;
     }
 
     .calendar-grid {
@@ -92,12 +155,21 @@
       background-color: #fff;
       border: 1px solid #e2e8f0;
       border-radius: 6px;
-      min-height: 60px;
+      min-height: 65px;
       padding: 5px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       position: relative;
+      transition: background-color 0.2s;
+    }
+
+    /* 기록이 있는 날짜는 누를 수 있음을 시각화 */
+    .calendar-day.has-data {
+      cursor: pointer;
+    }
+    .calendar-day.has-data:hover {
+      background-color: #f7fafc;
     }
 
     .day-num {
@@ -107,31 +179,18 @@
     }
 
     .quiz-result-badge {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: bold;
       border-radius: 4px;
       padding: 2px 4px;
       text-align: center;
+      margin-top: 2px;
     }
 
     .badge-correct { background-color: #c6f6d5; color: #22543d; }
     .badge-wrong { background-color: #fed7d7; color: #742a2a; }
 
-    /* 기존 스타일 유지 및 보완 */
-    .input-area {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    input {
-      flex: 1;
-      padding: 12px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-
+    /* 통계 및 글로벌 버튼 스타일 */
     button {
       padding: 12px 15px;
       font-size: 15px;
@@ -140,245 +199,344 @@
       background-color: #4CAF50;
       color: white;
       cursor: pointer;
+      transition: background 0.2s;
     }
-
     button:hover { background-color: #45a049; }
 
-    ul { list-style: none; padding: 0; }
-
-    li {
-      background-color: #f1f1f1;
-      margin-bottom: 10px;
-      padding: 12px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .plan-text { flex: 1; margin-left: 10px; }
-    .done { text-decoration: line-through; color: gray; }
-    .delete-btn { background-color: #ff5c5c; margin-left: 10px; }
-    .delete-btn:hover { background-color: #e04848; }
-
     .result {
-      margin-top: 25px;
+      margin-top: 15px;
       padding: 15px;
-      background-color: #e8f5e9;
       border-radius: 10px;
       text-align: center;
-      font-size: 18px;
-      font-weight: bold;
+      font-size: 16px;
+      line-height: 1.5;
     }
 
-    .percent { color: #2e7d32; font-size: 24px; }
+    /* 📌 오답 노트 모달 팝업 스타일 */
+    .modal {
+      display: none; 
+      position: fixed; 
+      z-index: 1000; 
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 25px;
+      border-radius: 12px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+    .close-btn {
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #aaa;
+    }
+    .close-btn:hover { color: #333; }
+    .modal-item {
+      border-bottom: 1px dashed #cbd5e0;
+      padding: 15px 0;
+    }
+    .modal-item:last-child { border-bottom: none; }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <h1>오늘의 계획 & AI 퀴즈</h1>
+    <h1>💻 AI 코딩 미션 & 오답 노트</h1>
 
     <div class="api-area">
-      <label for="apiKeyInput" style="font-weight: bold; display: block; margin-bottom: 5px;">Gemini API Key 설정:</label>
-      <div style="display: flex; gap: 10px;">
+      <div class="settings-row">
+        <label for="apiKeyInput">Gemini API Key:</label>
         <input type="password" id="apiKeyInput" placeholder="AI 키를 입력해 주세요">
         <button onclick="saveApiKey()">저장</button>
+      </div>
+      <div class="settings-row">
+        <label for="langSelect">프로그래밍 언어:</label>
+        <select id="langSelect" onchange="saveLanguage()">
+          <option value="JavaScript">JavaScript</option>
+          <option value="Python">Python</option>
+          <option value="Java">Java</option>
+          <option value="C++">C++</option>
+          <option value="TypeScript">TypeScript</option>
+        </select>
+      </div>
+      <div class="settings-row">
+        <label for="difficultySelect">문제 난이도:</label>
+        <select id="difficultySelect" onchange="saveDifficulty()">
+          <option value="쉬움">쉬움 (기본 문법 및 기초)</option>
+          <option value="보통">보통 (실무 활용 및 알고리즘 기초)</option>
+          <option value="어려움">어려움 (심화 개념 및 예외 상황)</option>
+        </select>
       </div>
     </div>
 
     <div class="quiz-area">
-      <h2>🧠 오늘의 상식 퀴즈</h2>
+      <h2>🎯 오늘의 코딩 미션</h2>
       <div id="quizContent">
-        <button onclick="fetchTodayQuiz()" style="width: 100%; background-color: #3182ce;">오늘의 퀴즈 가져오기</button>
+        <button onclick="fetchTodayQuiz()" style="width: 100%; background-color: #3182ce;">오늘의 코딩 테스트 가져오기</button>
       </div>
     </div>
 
-    <h2>📝 오늘의 할 일</h2>
-    <div class="input-area">
-      <input type="text" id="planInput" placeholder="오늘 할 계획을 입력하세요">
-      <button onclick="addPlan()">추가</button>
-    </div>
-
-    <ul id="planList"></ul>
-
-    <button onclick="calculatePercent()" style="width:100%; margin-top:15px;">
-      하루 실행률 확인하기
-    </button>
-
-    <div class="result" id="result">
-      아직 실행률을 확인하지 않았습니다.
+    <div class="settings-row" style="margin-bottom: 25px;">
+      <button onclick="resetTodayQuiz()" style="width: 100%; background-color: #e53e3e;">🔥 오늘 테스트 기록만 초기화</button>
     </div>
 
     <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0;">
 
-    <h2>📅 퀴즈 히스토리 & 통계</h2>
-    <div class="result" id="statsResult" style="background-color: #ebf8ff; color: #2b6cb0; margin-bottom: 15px;">
+    <h2>📅 테스트 히스토리 & 통계</h2>
+    <div class="result" id="statsResult" style="background-color: #ebf8ff; color: #2b6cb0; margin-bottom: 20px;">
       통계 데이터 로딩 중...
     </div>
 
-    <div class="calendar-container">
-      <h3 id="calendarMonth" style="text-align: left; margin-bottom: 10px;">2026년 5월</h3>
-      <div class="calendar-grid" id="calendarGrid">
-        </div>
+    <div class="calendar-nav-wrapper">
+      <h3 id="calendarMonth" style="margin: 0; min-width: 150px; text-align: left;">2026년 5월</h3>
+      <div class="calendar-btn-group">
+        <button onclick="moveMonth(-1)">◀ 이전 달</button>
+        <button onclick="moveMonth(0)" style="background-color: #3182ce;">오늘</button>
+        <button onclick="moveMonth(1)">다음 달 ▶</button>
+      </div>
     </div>
 
+    <div class="calendar-container">
+      <div class="calendar-grid" id="calendarGrid"></div>
+    </div>
+  </div>
+
+  <div id="noteModal" class="modal" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 id="modalTitle" style="margin:0; color:#2d3748;">오답 노트 다시보기</h3>
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+      </div>
+      <div id="modalBody">
+        </div>
+    </div>
   </div>
 
   <script>
+    // --- 💡 랜덤 문제 공급용 정교한 토픽 목록 구성 ---
+    const languageTopics = {
+      JavaScript: ["클로저(Closure)", "비동기 처리(Promise/Async-Await)", "호이스팅과 스코프 법칙", "배열 고차 함수(map/filter/reduce)", "프로토타입과 클래스 상속", "이벤트 루프와 태스크 큐", "지정 연산자 및 구조분해 할당"],
+      Python: ["리스트 컴프리헨션", "데코레이터(Decorator)", "제너레이터와 이터레이터", "딕셔너리 조작 및 매핑", "args 및 kwargs 가변 인자", "메모리 참조 및 깊은/얕은 복사", "예외 처리(try-except-finally)"],
+      Java: ["가비지 컬렉션 구조", "인터페이스와 추상 클래스 구현", "스트림 API 활용", "제네릭(Generics) 스펙", "멀티 스레드 및 동기화", "예외 계층 구조(Checked/Unchecked)", "오버라이딩 vs 오버로딩 에지 케이스"],
+      "C++": ["포인터 및 참조자 배정 연산", "동적 할당과 스마트 포인터", "가상 함수와 다형성 구조", "STL 컨테이너 복잡도", "템플릿(Template) 메타 프로그래밍", "복사 생성자 및 이동 생성자 법칙", "메모리 누수 원인 분석"],
+      TypeScript: ["인터페이스 vs 타입 앨리어스", "제네릭 제약 조건(Extends)", "유니온 타입 및 가드 기법", "유틸리티 타입(Partial/Pick/Omit)", "Enums 와 리터럴 상수 차이", "Mapped Types 생성 기법", "Strict Mode 하에서의 널 체크 프로토콜"]
+    };
+
     // --- 상태 관리 변수 ---
-    let plans = JSON.parse(localStorage.getItem("plans")) || [];
-    // 퀴즈 기록 구조: { "2026-05-30": { question: "...", success: true }, ... }
     let quizHistory = JSON.parse(localStorage.getItem("quizHistory")) || {};
     let geminiApiKey = localStorage.getItem("geminiApiKey") || "";
+    let selectedLang = localStorage.getItem("selectedLang") || "JavaScript";
+    let selectedDifficulty = localStorage.getItem("selectedDifficulty") || "보통";
+    
+    let currentQuizData = null;
+    let forceNewQuiz = false;
+    let currentCalendarDate = new Date();
+    const todayDateStr = new Date().toISOString().split('T')[0];
 
-    // 화면 초기 진입 시 설정
+    // 화면 세팅 동기화
     document.getElementById("apiKeyInput").value = geminiApiKey;
+    document.getElementById("langSelect").value = selectedLang;
+    document.getElementById("difficultySelect").value = selectedDifficulty;
 
-    const todayDateStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD 형식
+    function resetTodayQuiz() {
+      if (quizHistory[todayDateStr]) {
+        delete quizHistory[todayDateStr];
+        localStorage.setItem("quizHistory", JSON.stringify(quizHistory));
+        alert("오늘의 기록이 리셋되었습니다.");
+        location.reload(); 
+      } else {
+        alert("오늘 풀이한 기록이 없습니다.");
+      }
+    }
 
-    // --- API Key 저장 ---
     function saveApiKey() {
       const key = document.getElementById("apiKeyInput").value.trim();
-      if (!key) {
-        alert("올바른 API 키를 입력해주세요.");
-        return;
-      }
+      if (!key) { alert("올바른 API 키를 입력해주세요."); return; }
       localStorage.setItem("geminiApiKey", key);
       geminiApiKey = key;
       alert("API 키가 저장되었습니다.");
     }
 
-    // --- Gemini API를 이용한 퀴즈 생성 및 가져오기 ---
-    // --- Gemini API를 이용한 퀴즈 생성 및 가져오기 (최신 gemini-2.5-flash 모델 적용) ---
-  async function fetchTodayQuiz() {
-    if (!geminiApiKey) {
-      alert("먼저 Gemini API 키를 등록하고 저장해주세요!");
-      return;
+    function saveLanguage() {
+      selectedLang = document.getElementById("langSelect").value;
+      localStorage.setItem("selectedLang", selectedLang);
     }
 
-    if (quizHistory[todayDateStr]) {
-      renderQuizResultView(quizHistory[todayDateStr].success, quizHistory[todayDateStr].question);
-      return;
+    function saveDifficulty() {
+      selectedDifficulty = document.getElementById("difficultySelect").value;
+      localStorage.setItem("selectedDifficulty", selectedDifficulty);
     }
 
-    const quizContentDiv = document.getElementById("quizContent");
-    quizContentDiv.innerHTML = "<p style='text-align:center;'>🤖 Gemini가 신선한 문제를 출제하고 있습니다...</p>";
-
-    const prompt = `재미있고 유익한 4지선다형 일반 상식 퀴즈를 1개 만들어줘.
-  너는 반드시 아래의 JSON 포맷으로만 답변해야 해. 다른 부연 설명이나 마크다운(줄바꿈, \`\`\`json 등)은 절대 포함하지 마.
-
-  {
-    "question": "질문 내용",
-    "options": ["1번 선택지", "2번 선택지", "3번 선택지", "4번 선택지"],
-    "answer": 0
-  }`;
-
-    try {
-      // 💡 공식 v1 안정화 엔드포인트와 현재 정상 지원되는 최신 'gemini-2.5-flash' 모델을 매핑했습니다.
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ 
-          contents: [{ 
-            parts: [{ text: prompt }] 
-          }] 
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || `HTTP 에러: ${response.status}`);
+    // --- 🎲 토픽 추출 및 Gemini 문제 제작 ---
+    async function fetchTodayQuiz() {
+      if (!geminiApiKey) { alert("먼저 Gemini API 키를 등록하고 저장해주세요!"); return; }
+      if (!forceNewQuiz && quizHistory[todayDateStr]) {
+        renderQuizResultView(quizHistory[todayDateStr].success, quizHistory[todayDateStr].question, quizHistory[todayDateStr].explanation);
+        return;
       }
 
-      const data = await response.json();
-      
-      if (!data.candidates || !data.candidates[0].content.parts[0].text) {
-        throw new Error("올바른 응답 데이터를 받지 못했습니다.");
+      const quizContentDiv = document.getElementById("quizContent");
+      quizContentDiv.innerHTML = `<p style='text-align:center;'>🤖 Gemini가 문제를 엄선하는 중입니다...</p>`;
+
+      // 현재 선택된 언어군에서 무작위 토픽 추출
+      const currentList = languageTopics[selectedLang] || languageTopics["JavaScript"];
+      const chosenTopic = currentList[Math.floor(Math.random() * currentList.length)];
+
+      const prompt = `당신은 코딩 테스트 전문 면접관입니다.
+${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty}] 수준인 정밀하고 유익한 객관식 문제를 1개 출제해 주세요.
+특히 이번 문제는 핵심 개념 중 하나인 **[${chosenTopic}]** 영역을 깊이 있게 다루거나 파고드는 문제여야 합니다.
+
+[요구사항]
+1. 정답 인덱스(answer) 검산을 철저히 실행해 오류가 없도록 하십시오.
+2. 정확히 아래 명시된 JSON 포맷 껍데기만 출력하세요. 다른 마크다운 블록(\`\`\`json) 기호는 절대 제외하십시오.
+{
+  "question": "문제 설명과 소스 코드를 가독성 좋게 포함하세요. (줄바꿈은 \\n 사용)",
+  "options": ["1번 선택지", "2번 선택지", "3번 선택지", "4번 선택지"],
+  "answer": 0,
+  "explanation": "해당 정답이 도출되는 명확한 이유를 친절하게 설명하세요. (줄바꿈은 \\n 사용)"
+}
+(※ answer는 0, 1, 2, 3 중 하나여야 합니다.)`;
+
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+
+        if (!response.ok) { throw new Error(`HTTP 에러: ${response.status}`); }
+        const data = await response.json();
+        let rawText = data.candidates[0].content.parts[0].text.trim();
+        
+        rawText = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
+        
+        const quizData = JSON.parse(rawText);
+        currentQuizData = quizData; 
+        renderQuiz(quizData);
+      } catch (error) {
+        console.error(error);
+        quizContentDiv.innerHTML = `
+          <p style='color:red; text-align:center;'>문제를 불러오지 못했습니다.<br><small>${error.message}</small></p>
+          <button onclick="fetchTodayQuiz()" style="width: 100%; background-color: #3182ce; margin-top: 10px;">다시 시도</button>
+        `;
       }
-
-      let rawText = data.candidates[0].content.parts[0].text.trim();
-      
-      // 마크다운 잔재 확실하게 제거
-      rawText = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
-      
-      const quizData = JSON.parse(rawText);
-      renderQuiz(quizData);
-
-    } catch (error) {
-      console.error("Gemini API Error:", error);
-      quizContentDiv.innerHTML = `
-        <p style='color:red; text-align:center;'>퀴즈를 불러오지 못했습니다.<br><small style="color:#666;">원인: ${error.message}</small></p>
-        <button onclick="fetchTodayQuiz()" style="width: 100%; background-color: #3182ce; margin-top: 10px;">다시 시도</button>
-      `;
     }
-  }
 
-    // 퀴즈 화면 렌더링
     function renderQuiz(quizData) {
       const quizContentDiv = document.getElementById("quizContent");
-      
       let optionsHtml = quizData.options.map((opt, idx) => `
-        <button class="quiz-opt-btn" onclick="submitAnswer(${idx}, ${quizData.answer}, '${quizData.question.replace(/'/g, "\\'")}')">
-          ${idx + 1}. ${opt}
+        <button class="quiz-opt-btn" onclick="submitAnswer(${idx})">
+          ${idx + 1}. ${opt.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
         </button>
       `).join('');
 
       quizContentDiv.innerHTML = `
-        <div class="quiz-question">Q. ${quizData.question}</div>
+        <div class="quiz-question">${quizData.question.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
         <div class="quiz-options">${optionsHtml}</div>
       `;
     }
 
-    // 정답 제출 처리
-    function submitAnswer(chosenIdx, correctIdx, questionText) {
+    function submitAnswer(chosenIdx) {
+      if (!currentQuizData) return;
+
+      const correctIdx = currentQuizData.answer;
+      const questionText = currentQuizData.question;
+      const explanationText = currentQuizData.explanation || "해설이 누락되었습니다.";
       const isSuccess = (chosenIdx === correctIdx);
       
-      // 역사에 저장
-      quizHistory[todayDateStr] = {
-        question: questionText,
-        success: isSuccess
-      };
-      localStorage.setItem("quizHistory", JSON.stringify(quizHistory));
-
-      if (isSuccess) {
-        alert("🎉 정답입니다! 달력에 기록되었습니다.");
+      if (quizHistory[todayDateStr] && forceNewQuiz) {
+        if (quizHistory[todayDateStr].totalCount === undefined) {
+          const prevSuccess = quizHistory[todayDateStr].success;
+          quizHistory[todayDateStr].totalCount = 1;
+          quizHistory[todayDateStr].correctCount = prevSuccess ? 1 : 0;
+          quizHistory[todayDateStr].details = [{ success: prevSuccess, question: quizHistory[todayDateStr].question, explanation: quizHistory[todayDateStr].explanation }];
+        }
+        
+        quizHistory[todayDateStr].totalCount += 1;
+        if (isSuccess) quizHistory[todayDateStr].correctCount += 1;
+        quizHistory[todayDateStr].success = (quizHistory[todayDateStr].correctCount === quizHistory[todayDateStr].totalCount);
+        quizHistory[todayDateStr].question = questionText;
+        quizHistory[todayDateStr].explanation = explanationText;
+        quizHistory[todayDateStr].details.push({ success: isSuccess, question: questionText, explanation: explanationText });
       } else {
-        alert(`❌ 틀렸습니다! (정답은 ${correctIdx + 1}번)\n달력에 기록되었습니다.`);
+        quizHistory[todayDateStr] = {
+          question: questionText,
+          success: isSuccess,
+          explanation: explanationText,
+          totalCount: 1,
+          correctCount: isSuccess ? 1 : 0,
+          details: [{ success: isSuccess, question: questionText, explanation: explanationText }]
+        };
       }
 
-      renderQuizResultView(isSuccess, questionText);
+      localStorage.setItem("quizHistory", JSON.stringify(quizHistory));
+      alert(isSuccess ? "🎉 정답입니다! 훌륭해요." : `❌ 아쉽게도 틀렸습니다! (정답은 ${correctIdx + 1}번)`);
+
+      forceNewQuiz = false;
+      renderQuizResultView(isSuccess, questionText, explanationText);
       initCalendar();
       calculateStats();
     }
 
-    // 이미 푼 경우 결과 화면 보여주기
-    function renderQuizResultView(isSuccess, questionText) {
+    function renderQuizResultView(isSuccess, questionText, explanationText) {
       const quizContentDiv = document.getElementById("quizContent");
+      let daySummaryHtml = "";
+      const todayData = quizHistory[todayDateStr];
+      if (todayData && todayData.totalCount > 1) {
+        daySummaryHtml = `<p style="font-size:14px; color:#4a5568; text-align:center;">(오늘 총 <strong>${todayData.totalCount}문제</strong> 중 <strong>${todayData.correctCount}문제</strong> 성공!)</p>`;
+      }
+
       quizContentDiv.innerHTML = `
-        <div class="quiz-question" style="color: #4a5568;">Q. ${questionText}</div>
-        <div style="text-align: center; font-size: 18px; font-weight: bold; color: ${isSuccess ? '#2f855a' : '#c53030'}">
-          ${isSuccess ? "🟢 오늘 문제를 맞혔습니다!" : "🔴 오늘 문제를 틀렸습니다."}
+        <div class="quiz-question" style="color: #cbd5e0; background-color: #1a202c;">${questionText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+        <div style="text-align: center; font-size: 18px; font-weight: bold; color: ${isSuccess ? '#2f855a' : '#c53030'}; margin-top:15px;">
+          ${isSuccess ? "🟢 정답 처리되었습니다." : "🔴 오답 처리되었습니다."}
+        </div>
+        ${daySummaryHtml}
+        <div class="quiz-explanation"><strong>💡 정밀 분석 해설:</strong><br>${explanationText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+        <div style="margin-top: 15px;">
+          <button onclick="startMoreQuiz()" style="width: 100%; background-color: #2b6cb0;">🚀 무작위 새 문제 하나 더 풀기</button>
         </div>
       `;
     }
 
+    function startMoreQuiz() {
+      forceNewQuiz = true;
+      fetchTodayQuiz();
+    }
 
-    // --- 캘린더 & 통계 로직 ---
+    function moveMonth(direction) {
+      if (direction === 0) currentCalendarDate = new Date();
+      else currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
+      initCalendar();
+    }
+
+    // --- 캘린더 드로잉 및 오답노트 연결 처리 ---
     function initCalendar() {
       const grid = document.getElementById("calendarGrid");
       const monthTitle = document.getElementById("calendarMonth");
       grid.innerHTML = "";
 
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = now.getMonth(); // 0 ~ 11
-
+      const year = currentCalendarDate.getFullYear();
+      const month = currentCalendarDate.getMonth(); 
       monthTitle.textContent = `${year}년 ${month + 1}월`;
 
-      // 요일 헤더 추가
       const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
       weekDays.forEach(day => {
         const header = document.createElement("div");
@@ -387,17 +545,13 @@
         grid.appendChild(header);
       });
 
-      // 이번 달 첫날과 마지막 날 계산
       const firstDayIdx = new Date(year, month, 1).getDay();
       const lastDate = new Date(year, month + 1, 0).getDate();
 
-      // 공백 채우기
       for (let i = 0; i < firstDayIdx; i++) {
-        const emptyCell = document.createElement("div");
-        grid.appendChild(emptyCell);
+        grid.appendChild(document.createElement("div"));
       }
 
-      // 날짜 채우기
       for (let date = 1; date <= lastDate; date++) {
         const dayCell = document.createElement("div");
         dayCell.className = "calendar-day";
@@ -407,19 +561,66 @@
         numDiv.textContent = date;
         dayCell.appendChild(numDiv);
 
-        // 해당 날짜 문자열 매칭 (YYYY-MM-DD 기법 보정)
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
         
-        // 풀었던 기록이 있다면 배지 추가
         if (quizHistory[dateStr]) {
+          dayCell.classList.add("has-data");
+          // 셀을 누르면 오답노트 팝업 호출 전송
+          dayCell.onclick = () => openNoteModal(dateStr);
+
           const badge = document.createElement("div");
-          badge.className = `quiz-result-badge ${quizHistory[dateStr].success ? 'badge-correct' : 'badge-wrong'}`;
-          badge.textContent = quizHistory[dateStr].success ? "정답" : "오답";
+          const dayData = quizHistory[dateStr];
+          
+          if (dayData.totalCount && dayData.totalCount > 1) {
+            badge.className = `quiz-result-badge`;
+            badge.style.backgroundColor = "#e2e8f0";
+            badge.style.color = "#2d3748";
+            badge.textContent = `🎯 ${dayData.correctCount}/${dayData.totalCount}`;
+          } else {
+            badge.className = `quiz-result-badge ${dayData.success ? 'badge-correct' : 'badge-wrong'}`;
+            badge.textContent = dayData.success ? "정답" : "오답";
+          }
           dayCell.appendChild(badge);
         }
-
         grid.appendChild(dayCell);
       }
+    }
+
+    // --- 📌 오답 노트 모달 열기 제어 ---
+    function openNoteModal(dateStr) {
+      const modal = document.getElementById("noteModal");
+      const title = document.getElementById("modalTitle");
+      const body = document.getElementById("modalBody");
+      
+      const dayData = quizHistory[dateStr];
+      if (!dayData) return;
+
+      title.textContent = `📝 ${dateStr} 학습 복습 노트`;
+      body.innerHTML = "";
+
+      // 하위 배열 details 데이터 유무 검증 후 파싱
+      const items = dayData.details || [{ success: dayData.success, question: dayData.question, explanation: dayData.explanation }];
+
+      items.forEach((item, index) => {
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "modal-item";
+        itemDiv.innerHTML = `
+          <h4 style="margin-top:0; color:${item.success ? '#2f855a' : '#c53030'};">
+            ${index + 1}번 미션: ${item.success ? "🟢 정답 패스" : "🔴 다시 보기 대상(오답)"}
+          </h4>
+          <div class="quiz-question" style="font-size:13px; padding:10px; background-color:#1a202c; color:#e2e8f0;">${item.question.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+          <div class="quiz-explanation" style="background-color:#f7fafc; margin-top:8px; font-size:13px;">
+            <strong>해설:</strong><br>${item.explanation.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+          </div>
+        `;
+        body.appendChild(itemDiv);
+      });
+
+      modal.style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("noteModal").style.display = "none";
     }
 
     function calculateStats() {
@@ -427,115 +628,36 @@
       const historyArray = Object.values(quizHistory);
 
       if (historyArray.length === 0) {
-        statsResult.innerHTML = "아직 도전한 퀴즈 기록이 없습니다. 첫 문제를 풀어보세요!";
+        statsResult.innerHTML = "아직 도전한 코딩 테스트 기록이 없습니다. 문제를 가져와 시작해 보세요!";
         return;
       }
 
-      const total = historyArray.length;
-      const correctCount = historyArray.filter(h => h.success).length;
-      const accuracy = Math.round((correctCount / total) * 100);
+      let totalQuestions = 0;
+      let totalCorrect = 0;
 
-      statsResult.innerHTML = `
-        현재까지 총 <strong>${total}회</strong> 도전 중 <strong>${correctCount}회</strong> 성공!<br>
-        🎯 누적 퀴즈 정답률: <strong>${accuracy}%</strong>
-      `;
-    }
-
-
-    // --- 기존 계획관리 로직 (유지) ---
-    function savePlans() {
-      localStorage.setItem("plans", JSON.stringify(plans));
-    }
-
-    function addPlan() {
-      const input = document.getElementById("planInput");
-      const planText = input.value.trim();
-
-      if (planText === "") {
-        alert("계획을 입력해주세요.");
-        return;
-      }
-
-      plans.push({ text: planText, done: false });
-      savePlans();
-      input.value = "";
-      showPlans();
-      calculatePercent();
-    }
-
-    document.getElementById("planInput").addEventListener("keydown", function(event) {
-      if (event.key === "Enter") { addPlan(); }
-    });
-
-    function showPlans() {
-      const planList = document.getElementById("planList");
-      planList.innerHTML = "";
-
-      plans.forEach((plan, index) => {
-        const li = document.createElement("li");
-
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.checked = plan.done;
-        checkbox.onchange = function() {
-          plans[index].done = checkbox.checked;
-          savePlans();
-          showPlans();
-          calculatePercent();
-        };
-
-        const span = document.createElement("span");
-        span.textContent = plan.text;
-        span.className = "plan-text";
-
-        if (plan.done) {
-          span.classList.add("done");
-          span.textContent = "✔ " + plan.text;
+      historyArray.forEach(dayData => {
+        if (dayData.totalCount !== undefined) {
+          totalQuestions += dayData.totalCount;
+          totalCorrect += dayData.correctCount;
+        } else {
+          totalQuestions += 1;
+          if (dayData.success) totalCorrect += 1;
         }
-
-        const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "삭제";
-        deleteBtn.className = "delete-btn";
-        deleteBtn.onclick = function() {
-          plans.splice(index, 1);
-          savePlans();
-          showPlans();
-          calculatePercent();
-        };
-
-        li.appendChild(checkbox);
-        li.appendChild(span);
-        li.appendChild(deleteBtn);
-        planList.appendChild(li);
       });
-    }
 
-    function calculatePercent() {
-      const result = document.getElementById("result");
-      if (plans.length === 0) {
-        result.innerHTML = "계획이 없습니다.";
-        return;
-      }
-
-      let doneCount = 0;
-      plans.forEach(plan => { if (plan.done) doneCount++; });
-      const percent = Math.round((doneCount / plans.length) * 100);
-
-      result.innerHTML = `
-        오늘 계획 ${plans.length}개 중 ${doneCount}개를 완료했습니다.<br>
-        실행률: <span class="percent">${percent}%</span>
+      const accuracy = Math.round((totalCorrect / totalQuestions) * 100);
+      statsResult.innerHTML = `
+        현재까지 총 <strong>${totalQuestions}문제</strong> 중 <strong>${totalCorrect}문제</strong> 클리어!<br>
+        🎯 통합 코딩 테스트 성공률: <strong>${accuracy}%</strong>
       `;
     }
 
-    // --- 초기화 구동 ---
-    showPlans();
-    calculatePercent();
+    // 초기 시동
     initCalendar();
     calculateStats();
 
-    // 혹시 오늘 이미 문제를 풀었다면 자동으로 풀이 상태 렌더링
     if (quizHistory[todayDateStr]) {
-      renderQuizResultView(quizHistory[todayDateStr].success, quizHistory[todayDateStr].question);
+      renderQuizResultView(quizHistory[todayDateStr].success, quizHistory[todayDateStr].question, quizHistory[todayDateStr].explanation);
     }
   </script>
 </body>
