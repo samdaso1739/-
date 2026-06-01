@@ -4,12 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI 코딩 테스트 & 오답노트 캘린더</title>
+  
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-c.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-cpp.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
       background-color: #f4f6f8;
       margin: 0;
-      padding: 20px; /* 모바일 대응을 위해 기본 패딩 소폭 축소 */
+      padding: 20px; 
     }
 
     .container {
@@ -26,7 +37,6 @@
       color: #333;
     }
 
-    /* API 설정 및 언어/난이도 선택 영역 */
     .api-area {
       background-color: #f9f9f9;
       padding: 15px;
@@ -60,7 +70,6 @@
       background-color: white;
     }
 
-    /* 퀴즈 영역 */
     .quiz-area {
       background-color: #edf2f7;
       padding: 20px;
@@ -69,15 +78,24 @@
     }
 
     .quiz-question {
-      font-size: 16px;
-      font-weight: bold;
+      font-size: 15px;
+      font-weight: 500;
       margin-bottom: 15px;
       white-space: pre-wrap;
-      background-color: #2d3748;
-      color: #fff;
+      background-color: #1d1f21;
+      color: #c5c8c6;
       padding: 15px;
       border-radius: 8px;
-      font-family: 'Courier New', Courier, monospace;
+      line-height: 1.6;
+    }
+
+    .quiz-question pre[class*="language-"] {
+      margin: 12px 0;
+      padding: 14px;
+      border-radius: 6px;
+      font-family: 'Fira Code', 'Courier New', Courier, monospace;
+      font-size: 14px;
+      background: #2d2d2d !important;
     }
 
     .quiz-options {
@@ -87,7 +105,7 @@
     }
 
     .quiz-opt-btn {
-      padding: 12px; /* 터치 영역 확대 */
+      padding: 12px; 
       background-color: white;
       border: 1px solid #cbd5e0;
       border-radius: 6px;
@@ -95,7 +113,6 @@
       cursor: pointer;
       font-size: 15px;
       transition: background 0.2s, color 0.2s;
-      font-family: 'Courier New', Courier, monospace;
       color: #2d3748 !important; 
     }
 
@@ -116,7 +133,6 @@
       white-space: pre-wrap;
     }
 
-    /* 달력 내비게이션 및 레이아웃 */
     .calendar-nav-wrapper {
       display: flex;
       justify-content: space-between;
@@ -164,7 +180,6 @@
       transition: background-color 0.2s;
     }
 
-    /* 기록이 있는 날짜는 누를 수 있음을 시각화 */
     .calendar-day.has-data {
       cursor: pointer;
     }
@@ -190,7 +205,6 @@
     .badge-correct { background-color: #c6f6d5; color: #22543d; }
     .badge-wrong { background-color: #fed7d7; color: #742a2a; }
 
-    /* 통계 및 글로벌 버튼 스타일 */
     button {
       padding: 12px 15px;
       font-size: 15px;
@@ -212,7 +226,6 @@
       line-height: 1.5;
     }
 
-    /* 📌 오답 노트 모달 팝업 스타일 */
     .modal {
       display: none; 
       position: fixed; 
@@ -324,13 +337,11 @@
         <h3 id="modalTitle" style="margin:0; color:#2d3748;">오답 노트 다시보기</h3>
         <span class="close-btn" onclick="closeModal()">&times;</span>
       </div>
-      <div id="modalBody">
-        </div>
+      <div id="modalBody"></div>
     </div>
   </div>
 
   <script>
-    // --- 💡 랜덤 문제 공급용 정교한 토픽 목록 구성 ---
     const languageTopics = {
       JavaScript: ["클로저(Closure)", "비동기 처리(Promise/Async-Await)", "호이스팅과 스코프 법칙", "배열 고차 함수(map/filter/reduce)", "프로토타입과 클래스 상속", "이벤트 루프와 태스크 큐", "지정 연산자 및 구조분해 할당"],
       Python: ["리스트 컴프리헨션", "데코레이터(Decorator)", "제너레이터와 이터레이터", "딕셔너리 조작 및 매핑", "args 및 kwargs 가변 인자", "메모리 참조 및 깊은/얕은 복사", "예외 처리(try-except-finally)"],
@@ -339,7 +350,6 @@
       TypeScript: ["인터페이스 vs 타입 앨리어스", "제네릭 제약 조건(Extends)", "유니온 타입 및 가드 기법", "유틸리티 타입(Partial/Pick/Omit)", "Enums 와 리터럴 상수 차이", "Mapped Types 생성 기법", "Strict Mode 하에서의 널 체크 프로토콜"]
     };
 
-    // --- 상태 관리 변수 ---
     let quizHistory = JSON.parse(localStorage.getItem("quizHistory")) || {};
     let geminiApiKey = localStorage.getItem("geminiApiKey") || "";
     let selectedLang = localStorage.getItem("selectedLang") || "JavaScript";
@@ -350,10 +360,24 @@
     let currentCalendarDate = new Date();
     const todayDateStr = new Date().toISOString().split('T')[0];
 
-    // 화면 세팅 동기화
+    // 💡 [원인 해결 2] 중복 호출 및 연타 방지용 글로벌 로딩 플래그 도입
+    let isQuizLoading = false; 
+
     document.getElementById("apiKeyInput").value = geminiApiKey;
     document.getElementById("langSelect").value = selectedLang;
     document.getElementById("difficultySelect").value = selectedDifficulty;
+
+    // 안전하게 하이라이팅을 호출하는 헬퍼 함수
+    function safeHighlightAll() {
+      if (typeof Prism !== 'undefined') {
+        Prism.highlightAll();
+      }
+    }
+
+    function getPrismLangClass(lang) {
+      const map = { "JavaScript": "javascript", "Python": "python", "Java": "java", "C++": "cpp", "TypeScript": "typescript" };
+      return map[lang] || "javascript";
+    }
 
     function resetTodayQuiz() {
       if (quizHistory[todayDateStr]) {
@@ -384,18 +408,23 @@
       localStorage.setItem("selectedDifficulty", selectedDifficulty);
     }
 
-    // --- 🎲 토픽 추출 및 Gemini 문제 제작 ---
     async function fetchTodayQuiz() {
       if (!geminiApiKey) { alert("먼저 Gemini API 키를 등록하고 저장해주세요!"); return; }
+      
+      // 💡 [원인 해결 2] 이미 요청이 처리 중인 경우 추가 차단
+      if (isQuizLoading) return;
+
       if (!forceNewQuiz && quizHistory[todayDateStr]) {
         renderQuizResultView(quizHistory[todayDateStr].success, quizHistory[todayDateStr].question, quizHistory[todayDateStr].explanation);
         return;
       }
 
       const quizContentDiv = document.getElementById("quizContent");
-      quizContentDiv.innerHTML = `<p style='text-align:center;'>🤖 Gemini가 문제를 엄선하는 중입니다...</p>`;
+      quizContentDiv.innerHTML = `<p style='text-align:center;'>🤖 Gemini가 문제를 엄선하는 중입니다... (중복 요청 금지)</p>`;
 
-      // 현재 선택된 언어군에서 무작위 토픽 추출
+      // 로딩 활성화
+      isQuizLoading = true;
+
       const currentList = languageTopics[selectedLang] || languageTopics["JavaScript"];
       const chosenTopic = currentList[Math.floor(Math.random() * currentList.length)];
 
@@ -403,16 +432,17 @@
 ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty}] 수준인 정밀하고 유익한 객관식 문제를 1개 출제해 주세요.
 특히 이번 문제는 핵심 개념 중 하나인 **[${chosenTopic}]** 영역을 깊이 있게 다루거나 파고드는 문제여야 합니다.
 
-[요구사항]
-1. 정답 인덱스(answer) 검산을 철저히 실행해 오류가 없도록 하십시오.
-2. 정확히 아래 명시된 JSON 포맷 껍데기만 출력하세요. 다른 마크다운 블록(\`\`\`json) 기호는 절대 제외하십시오.
+[출제 요구사항]
+1. 문제 내용에 등장하는 모든 소스 코드는 반드시 코드의 시작과 끝을 백틱 3개(\`\`\`)로 감싸서 응답에 포함하십시오. 예시: \`\`\`\\n코드내용\\n\`\`\`
+2. 정답 인덱스(answer) 검산을 철저히 실행해 오류가 없도록 하십시오. (answer는 0, 1, 2, 3 중 하나)
+3. 정확히 아래 명시된 JSON 포맷의 데이터만 출력하세요. 앞뒤에 \`\`\`json 같은 마크다운 기호는 절대 제외하고 순수 텍스트 껍데기만 출력하십시오.
+
 {
-  "question": "문제 설명과 소스 코드를 가독성 좋게 포함하세요. (줄바꿈은 \\n 사용)",
-  "options": ["1번 선택지", "2번 선택지", "3번 선택지", "4번 선택지"],
+  "question": "문제 설명과 소스 코드가 들어가는 영역입니다. 소스 코드는 반드시 백틱 3개(\`\`\`)로 감싸주세요. 줄바꿈은 \\n을 사용합니다.",
+  "options": ["1번 보기", "2번 보기", "3번 보기", "4번 보기"],
   "answer": 0,
-  "explanation": "해당 정답이 도출되는 명확한 이유를 친절하게 설명하세요. (줄바꿈은 \\n 사용)"
-}
-(※ answer는 0, 1, 2, 3 중 하나여야 합니다.)`;
+  "explanation": "정답 해설을 작성하세요. 줄바꿈은 \\n을 사용합니다."
+}`;
 
       try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
@@ -425,18 +455,44 @@ ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty
         const data = await response.json();
         let rawText = data.candidates[0].content.parts[0].text.trim();
         
-        rawText = rawText.replace(/```json/gi, "").replace(/```/g, "").trim();
+        rawText = rawText.replace(/^```json/i, "").replace(/```$/, "").trim();
         
         const quizData = JSON.parse(rawText);
         currentQuizData = quizData; 
         renderQuiz(quizData);
       } catch (error) {
         console.error(error);
+        let errorMsg = error.message;
+        if (errorMsg.includes("429")) {
+          errorMsg = "Gemini API의 요청 제한(RPM)을 초과했습니다. 약 1분 뒤에 다시 시도해 주세요.";
+        }
         quizContentDiv.innerHTML = `
-          <p style='color:red; text-align:center;'>문제를 불러오지 못했습니다.<br><small>${error.message}</small></p>
+          <p style='color:red; text-align:center;'>문제를 불러오지 못했습니다.<br><small>${errorMsg}</small></p>
           <button onclick="fetchTodayQuiz()" style="width: 100%; background-color: #3182ce; margin-top: 10px;">다시 시도</button>
         `;
+      } finally {
+        // 통신 완료 후 로딩 해제
+        isQuizLoading = false;
       }
+    }
+
+    function formatQuestionText(text) {
+      if (!text) return "";
+      const parts = text.split("```");
+      let resultHtml = "";
+      
+      parts.forEach((part, index) => {
+        if (index % 2 === 1) {
+          let cleanCode = part.replace(/^(javascript|python|java|cpp|typescript|c)\s*/i, "");
+          cleanCode = cleanCode.replace(/</g, "&lt;").replace(/>/g, "&gt;").trim();
+          const langClass = getPrismLangClass(selectedLang);
+          resultHtml += `<pre><code class="language-${langClass}">${cleanCode}</code></pre>`;
+        } else {
+          const safeText = part.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          resultHtml += `<span>${safeText}</span>`;
+        }
+      });
+      return resultHtml;
     }
 
     function renderQuiz(quizData) {
@@ -448,9 +504,11 @@ ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty
       `).join('');
 
       quizContentDiv.innerHTML = `
-        <div class="quiz-question">${quizData.question.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+        <div class="quiz-question">${formatQuestionText(quizData.question)}</div>
         <div class="quiz-options">${optionsHtml}</div>
       `;
+      
+      safeHighlightAll();
     }
 
     function submitAnswer(chosenIdx) {
@@ -504,7 +562,7 @@ ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty
       }
 
       quizContentDiv.innerHTML = `
-        <div class="quiz-question" style="color: #cbd5e0; background-color: #1a202c;">${questionText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+        <div class="quiz-question">${formatQuestionText(questionText)}</div>
         <div style="text-align: center; font-size: 18px; font-weight: bold; color: ${isSuccess ? '#2f855a' : '#c53030'}; margin-top:15px;">
           ${isSuccess ? "🟢 정답 처리되었습니다." : "🔴 오답 처리되었습니다."}
         </div>
@@ -514,6 +572,8 @@ ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty
           <button onclick="startMoreQuiz()" style="width: 100%; background-color: #2b6cb0;">🚀 무작위 새 문제 하나 더 풀기</button>
         </div>
       `;
+      
+      safeHighlightAll();
     }
 
     function startMoreQuiz() {
@@ -527,7 +587,6 @@ ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty
       initCalendar();
     }
 
-    // --- 캘린더 드로잉 및 오답노트 연결 처리 ---
     function initCalendar() {
       const grid = document.getElementById("calendarGrid");
       const monthTitle = document.getElementById("calendarMonth");
@@ -565,7 +624,6 @@ ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty
         
         if (quizHistory[dateStr]) {
           dayCell.classList.add("has-data");
-          // 셀을 누르면 오답노트 팝업 호출 전송
           dayCell.onclick = () => openNoteModal(dateStr);
 
           const badge = document.createElement("div");
@@ -586,7 +644,6 @@ ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty
       }
     }
 
-    // --- 📌 오답 노트 모달 열기 제어 ---
     function openNoteModal(dateStr) {
       const modal = document.getElementById("noteModal");
       const title = document.getElementById("modalTitle");
@@ -598,7 +655,6 @@ ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty
       title.textContent = `📝 ${dateStr} 학습 복습 노트`;
       body.innerHTML = "";
 
-      // 하위 배열 details 데이터 유무 검증 후 파싱
       const items = dayData.details || [{ success: dayData.success, question: dayData.question, explanation: dayData.explanation }];
 
       items.forEach((item, index) => {
@@ -608,7 +664,7 @@ ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty
           <h4 style="margin-top:0; color:${item.success ? '#2f855a' : '#c53030'};">
             ${index + 1}번 미션: ${item.success ? "🟢 정답 패스" : "🔴 다시 보기 대상(오답)"}
           </h4>
-          <div class="quiz-question" style="font-size:13px; padding:10px; background-color:#1a202c; color:#e2e8f0;">${item.question.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+          <div class="quiz-question">${formatQuestionText(item.question)}</div>
           <div class="quiz-explanation" style="background-color:#f7fafc; margin-top:8px; font-size:13px;">
             <strong>해설:</strong><br>${item.explanation.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
           </div>
@@ -617,6 +673,7 @@ ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty
       });
 
       modal.style.display = "flex";
+      safeHighlightAll();
     }
 
     function closeModal() {
@@ -652,7 +709,7 @@ ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty
       `;
     }
 
-    // 초기 시동
+    // 💡 초기 작동 시 오류 유발 요소 차단 제어 완료
     initCalendar();
     calculateStats();
 
