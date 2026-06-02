@@ -133,16 +133,29 @@
       white-space: pre-wrap;
     }
 
+    .answer-highlight {
+      font-size: 15px;
+      font-weight: bold;
+      color: #2b6cb0;
+      background-color: #ebf8ff;
+      padding: 10px 14px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      border-left: 4px solid #2b6cb0;
+      line-height: 1.4;
+    }
+
     .calendar-nav-wrapper {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 15px;
+      gap: 10px;
     }
 
     .calendar-btn-group button {
-      padding: 8px 14px;
-      font-size: 14px;
+      padding: 8px 12px;
+      font-size: 13px;
       background-color: #4a5568;
     }
     .calendar-btn-group button:hover {
@@ -171,8 +184,8 @@
       background-color: #fff;
       border: 1px solid #e2e8f0;
       border-radius: 6px;
-      min-height: 65px;
-      padding: 5px;
+      min-height: 75px;
+      padding: 6px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -193,17 +206,43 @@
       text-align: left;
     }
 
-    .quiz-result-badge {
-      font-size: 11px;
-      font-weight: bold;
-      border-radius: 4px;
-      padding: 2px 4px;
-      text-align: center;
-      margin-top: 2px;
+    .badge-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      justify-items: center;
+      margin-top: 5px;
     }
 
-    .badge-correct { background-color: #c6f6d5; color: #22543d; }
-    .badge-wrong { background-color: #fed7d7; color: #742a2a; }
+    .quiz-rect-badge {
+      font-size: 10px;
+      font-weight: bold;
+      border-radius: 4px;
+      grid-column: span 3;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    .quiz-mini-rect {
+      width: 15px;
+      height: 15px;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .rect-correct { background-color: #c6f6d5; color: #22543d; border: 1px solid #9ae6b4; }
+    .rect-wrong { background-color: #fed7d7; color: #742a2a; border: 1px solid #feb2b2; }
+    .rect-reviewed { background-color: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+    .rect-more { background-color: #e2e8f0; color: #4a5568; border: 1px solid #cbd5e0; }
 
     button {
       padding: 12px 15px;
@@ -242,7 +281,7 @@
       border-radius: 12px;
       max-width: 600px;
       width: 90%;
-      max-height: 80vh;
+      max-height: 85vh;
       overflow-y: auto;
       box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     }
@@ -264,8 +303,50 @@
     .modal-item {
       border-bottom: 1px dashed #cbd5e0;
       padding: 15px 0;
+      position: relative;
     }
     .modal-item:last-child { border-bottom: none; }
+
+    .modal-notes-area {
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 2px solid #e2e8f0;
+    }
+    .modal-notes-area textarea {
+      width: 100%;
+      height: 80px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e0;
+      font-size: 14px;
+      box-sizing: border-box;
+      resize: vertical;
+      font-family: inherit;
+    }
+    
+    .done-btn {
+      padding: 5px 10px;
+      font-size: 12px;
+      background-color: #d97706;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
+    }
+    .done-btn:hover { background-color: #b45309; }
+
+    /* 📌 [신규 추가] 보관 및 유틸리티형 우측 상단 버튼 디자인 */
+    .util-btn {
+      padding: 5px 10px;
+      font-size: 12px;
+      background-color: #2b6cb0;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
+    }
+    .util-btn:hover { background-color: #2c5282; }
+    .util-btn.saved { background-color: #ecc94b; color: #744210; font-weight: bold; }
   </style>
 </head>
 
@@ -318,11 +399,13 @@
     </div>
 
     <div class="calendar-nav-wrapper">
-      <h3 id="calendarMonth" style="margin: 0; min-width: 150px; text-align: left;">2026년 5월</h3>
-      <div class="calendar-btn-group">
-        <button onclick="moveMonth(-1)">◀ 이전 달</button>
+      <h3 id="calendarMonth" style="margin: 0; min-width: 110px; text-align: left;">2026년 5월</h3>
+      <div class="calendar-btn-group" style="display: flex; gap: 4px; flex-wrap: wrap;">
+        <button onclick="openSavedQuizzesModal()" style="background-color: #319795;">📂 보관함(⭐)</button>
+        <button onclick="openWrongAnswersOnlyModal()" style="background-color: #dd6b20;">🚨 오답노트</button>
+        <button onclick="moveMonth(-1)">◀</button>
         <button onclick="moveMonth(0)" style="background-color: #3182ce;">오늘</button>
-        <button onclick="moveMonth(1)">다음 달 ▶</button>
+        <button onclick="moveMonth(1)">▶</button>
       </div>
     </div>
 
@@ -338,6 +421,12 @@
         <span class="close-btn" onclick="closeModal()">&times;</span>
       </div>
       <div id="modalBody"></div>
+      
+      <div class="modal-notes-area" id="modalNotesWrapper">
+        <h4 style="margin: 0 0 8px 0; color:#4a5568;">📝 한 줄 메모 및 복습 기록</h4>
+        <textarea id="modalCustomNotes" placeholder="이 문제와 관련된 개념 정리나 기억해야 할 점을 자유롭게 기록해 보세요..."></textarea>
+        <button id="saveNotesBtn" style="width: 100%; margin-top: 8px; background-color: #4a5568; padding: 10px;">메모 저장하기</button>
+      </div>
     </div>
   </div>
 
@@ -360,14 +449,13 @@
     let currentCalendarDate = new Date();
     const todayDateStr = new Date().toISOString().split('T')[0];
 
-    // 💡 [원인 해결 2] 중복 호출 및 연타 방지용 글로벌 로딩 플래그 도입
     let isQuizLoading = false; 
+    let activeModalDateStr = null;
 
     document.getElementById("apiKeyInput").value = geminiApiKey;
     document.getElementById("langSelect").value = selectedLang;
     document.getElementById("difficultySelect").value = selectedDifficulty;
 
-    // 안전하게 하이라이팅을 호출하는 헬퍼 함수
     function safeHighlightAll() {
       if (typeof Prism !== 'undefined') {
         Prism.highlightAll();
@@ -410,19 +498,16 @@
 
     async function fetchTodayQuiz() {
       if (!geminiApiKey) { alert("먼저 Gemini API 키를 등록하고 저장해주세요!"); return; }
-      
-      // 💡 [원인 해결 2] 이미 요청이 처리 중인 경우 추가 차단
       if (isQuizLoading) return;
 
       if (!forceNewQuiz && quizHistory[todayDateStr]) {
-        renderQuizResultView(quizHistory[todayDateStr].success, quizHistory[todayDateStr].question, quizHistory[todayDateStr].explanation);
+        renderQuizResultView(quizHistory[todayDateStr].success, quizHistory[todayDateStr].question, quizHistory[todayDateStr].explanation, quizHistory[todayDateStr].answer, quizHistory[todayDateStr].options);
         return;
       }
 
       const quizContentDiv = document.getElementById("quizContent");
       quizContentDiv.innerHTML = `<p style='text-align:center;'>🤖 Gemini가 문제를 엄선하는 중입니다... (중복 요청 금지)</p>`;
 
-      // 로딩 활성화
       isQuizLoading = true;
 
       const currentList = languageTopics[selectedLang] || languageTopics["JavaScript"];
@@ -430,18 +515,20 @@
 
       const prompt = `당신은 코딩 테스트 전문 면접관입니다.
 ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty}] 수준인 정밀하고 유익한 객관식 문제를 1개 출제해 주세요.
-특히 이번 문제는 핵심 개념 중 하나인 **[${chosenTopic}]** 영역을 깊이 있게 다루거나 파고드는 문제여야 합니다.
+핵심 개념 중 하나인 **[${chosenTopic}]** 영역을 깊이 있게 다루는 문제여야 합니다.
 
 [출제 요구사항]
-1. 문제 내용에 등장하는 모든 소스 코드는 반드시 코드의 시작과 끝을 백틱 3개(\`\`\`)로 감싸서 응답에 포함하십시오. 예시: \`\`\`\\n코드내용\\n\`\`\`
+1. 문제 내용에 등장하는 모든 소스 코드는 반드시 코드의 시작과 끝을 백틱 3개(\`\`\`)로 감싸서 응답에 포함하십시오.
 2. 정답 인덱스(answer) 검산을 철저히 실행해 오류가 없도록 하십시오. (answer는 0, 1, 2, 3 중 하나)
-3. 정확히 아래 명시된 JSON 포맷의 데이터만 출력하세요. 앞뒤에 \`\`\`json 같은 마크다운 기호는 절대 제외하고 순수 텍스트 껍데기만 출력하십시오.
+3. 정답 선지는 너무 쉽게 판별하지 않도록 보기 간의 난이도 균형을 맞추어 출제하십시오.
+4. 무조건 1번 인덱스만 정답이 되도록 편향된 문제는 지양해 주세요. 다양한 위치에 정답이 분포하도록 해 주세요.
+5. 정확히 아래 명시된 JSON 포맷의 데이터만 출력하세요. 앞뒤 마크다운 기호는 모두 제외하십시오.
 
 {
-  "question": "문제 설명과 소스 코드가 들어가는 영역입니다. 소스 코드는 반드시 백틱 3개(\`\`\`)로 감싸주세요. 줄바꿈은 \\n을 사용합니다.",
+  "question": "문제 설명과 소스 코드 영역. 코드는 반드시 백틱 3개로 감싸주세요.",
   "options": ["1번 보기", "2번 보기", "3번 보기", "4번 보기"],
   "answer": 0,
-  "explanation": "정답 해설을 작성하세요. 줄바꿈은 \\n을 사용합니다."
+  "explanation": "정답 해설을 작성하세요."
 }`;
 
       try {
@@ -454,7 +541,6 @@ ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty
         if (!response.ok) { throw new Error(`HTTP 에러: ${response.status}`); }
         const data = await response.json();
         let rawText = data.candidates[0].content.parts[0].text.trim();
-        
         rawText = rawText.replace(/^```json/i, "").replace(/```$/, "").trim();
         
         const quizData = JSON.parse(rawText);
@@ -471,7 +557,6 @@ ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty
           <button onclick="fetchTodayQuiz()" style="width: 100%; background-color: #3182ce; margin-top: 10px;">다시 시도</button>
         `;
       } finally {
-        // 통신 완료 후 로딩 해제
         isQuizLoading = false;
       }
     }
@@ -517,6 +602,7 @@ ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty
       const correctIdx = currentQuizData.answer;
       const questionText = currentQuizData.question;
       const explanationText = currentQuizData.explanation || "해설이 누락되었습니다.";
+      const optionsData = currentQuizData.options;
       const isSuccess = (chosenIdx === correctIdx);
       
       if (quizHistory[todayDateStr] && forceNewQuiz) {
@@ -524,7 +610,15 @@ ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty
           const prevSuccess = quizHistory[todayDateStr].success;
           quizHistory[todayDateStr].totalCount = 1;
           quizHistory[todayDateStr].correctCount = prevSuccess ? 1 : 0;
-          quizHistory[todayDateStr].details = [{ success: prevSuccess, question: quizHistory[todayDateStr].question, explanation: quizHistory[todayDateStr].explanation }];
+          quizHistory[todayDateStr].details = [{ 
+            success: prevSuccess, 
+            question: quizHistory[todayDateStr].question, 
+            explanation: quizHistory[todayDateStr].explanation, 
+            answer: quizHistory[todayDateStr].answer, 
+            options: quizHistory[todayDateStr].options,
+            isReviewed: quizHistory[todayDateStr].isReviewed || false,
+            isSaved: quizHistory[todayDateStr].isSaved || false // 📌 스크랩 유무 연동
+          }];
         }
         
         quizHistory[todayDateStr].totalCount += 1;
@@ -532,15 +626,20 @@ ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty
         quizHistory[todayDateStr].success = (quizHistory[todayDateStr].correctCount === quizHistory[todayDateStr].totalCount);
         quizHistory[todayDateStr].question = questionText;
         quizHistory[todayDateStr].explanation = explanationText;
-        quizHistory[todayDateStr].details.push({ success: isSuccess, question: questionText, explanation: explanationText });
+        quizHistory[todayDateStr].answer = correctIdx;
+        quizHistory[todayDateStr].options = optionsData;
+        quizHistory[todayDateStr].details.push({ success: isSuccess, question: questionText, explanation: explanationText, answer: correctIdx, options: optionsData, isReviewed: false, isSaved: false });
       } else {
         quizHistory[todayDateStr] = {
           question: questionText,
           success: isSuccess,
           explanation: explanationText,
+          answer: correctIdx,
+          options: optionsData,
           totalCount: 1,
           correctCount: isSuccess ? 1 : 0,
-          details: [{ success: isSuccess, question: questionText, explanation: explanationText }]
+          customNotes: quizHistory[todayDateStr]?.customNotes || "",
+          details: [{ success: isSuccess, question: questionText, explanation: explanationText, answer: correctIdx, options: optionsData, isReviewed: false, isSaved: false }]
         };
       }
 
@@ -548,26 +647,51 @@ ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty
       alert(isSuccess ? "🎉 정답입니다! 훌륭해요." : `❌ 아쉽게도 틀렸습니다! (정답은 ${correctIdx + 1}번)`);
 
       forceNewQuiz = false;
-      renderQuizResultView(isSuccess, questionText, explanationText);
+      renderQuizResultView(isSuccess, questionText, explanationText, correctIdx, optionsData);
       initCalendar();
       calculateStats();
     }
 
-    function renderQuizResultView(isSuccess, questionText, explanationText) {
+    function renderQuizResultView(isSuccess, questionText, explanationText, correctIdx, optionsData) {
       const quizContentDiv = document.getElementById("quizContent");
       let daySummaryHtml = "";
       const todayData = quizHistory[todayDateStr];
+      
+      let lastIndex = 0;
+      let isSaved = false;
+      if (todayData && todayData.details) {
+        lastIndex = todayData.details.length - 1;
+        isSaved = todayData.details[lastIndex]?.isSaved || false;
+      }
+
       if (todayData && todayData.totalCount > 1) {
         daySummaryHtml = `<p style="font-size:14px; color:#4a5568; text-align:center;">(오늘 총 <strong>${todayData.totalCount}문제</strong> 중 <strong>${todayData.correctCount}문제</strong> 성공!)</p>`;
       }
 
+      let answerDisplayString = "?";
+      if (correctIdx !== undefined && optionsData && optionsData[correctIdx]) {
+        answerDisplayString = `${correctIdx + 1}번 — "${optionsData[correctIdx].replace(/</g, "&lt;").replace(/>/g, "&gt;")}"`;
+      } else if (correctIdx !== undefined) {
+        answerDisplayString = `${correctIdx + 1}번`;
+      }
+
+      // 📌 오늘 방금 푼 문제에 스크랩용 북마크 단추 설계 배치
       quizContentDiv.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:12px; color:#718096;">오늘 실시간 결과 분석</span>
+          <button class="util-btn ${isSaved ? 'saved' : ''}" onclick="toggleSaveQuiz('${todayDateStr}', ${lastIndex}, true)">
+            ${isSaved ? '⭐ 보관됨' : '⭐ 문제 보관'}
+          </button>
+        </div>
         <div class="quiz-question">${formatQuestionText(questionText)}</div>
         <div style="text-align: center; font-size: 18px; font-weight: bold; color: ${isSuccess ? '#2f855a' : '#c53030'}; margin-top:15px;">
           ${isSuccess ? "🟢 정답 처리되었습니다." : "🔴 오답 처리되었습니다."}
         </div>
         ${daySummaryHtml}
-        <div class="quiz-explanation"><strong>💡 정밀 분석 해설:</strong><br>${explanationText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+        <div class="quiz-explanation">
+          <div class="answer-highlight">📌 확정 정답: ${answerDisplayString}</div>
+          <strong>💡 정밀 분석 해설:</strong><br>${explanationText.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+        </div>
         <div style="margin-top: 15px;">
           <button onclick="startMoreQuiz()" style="width: 100%; background-color: #2b6cb0;">🚀 무작위 새 문제 하나 더 풀기</button>
         </div>
@@ -626,58 +750,361 @@ ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty
           dayCell.classList.add("has-data");
           dayCell.onclick = () => openNoteModal(dateStr);
 
-          const badge = document.createElement("div");
+          const badgeContainer = document.createElement("div");
+          badgeContainer.className = "badge-container";
+
           const dayData = quizHistory[dateStr];
           
-          if (dayData.totalCount && dayData.totalCount > 1) {
-            badge.className = `quiz-result-badge`;
-            badge.style.backgroundColor = "#e2e8f0";
-            badge.style.color = "#2d3748";
-            badge.textContent = `🎯 ${dayData.correctCount}/${dayData.totalCount}`;
-          } else {
-            badge.className = `quiz-result-badge ${dayData.success ? 'badge-correct' : 'badge-wrong'}`;
-            badge.textContent = dayData.success ? "정답" : "오답";
+          if (!dayData.details || dayData.details.length <= 1) {
+            const singleBadge = document.createElement("div");
+            const isSuccess = dayData.success === true || dayData.success === "true";
+            const isReviewed = dayData.isReviewed === true || dayData.isReviewed === "true";
+            
+            let themeClass = isSuccess ? 'rect-correct' : (isReviewed ? 'rect-reviewed' : 'rect-wrong');
+            let labelText = isSuccess ? "정답" : (isReviewed ? "완료" : "오답");
+
+            singleBadge.className = `quiz-rect-badge ${themeClass}`;
+            singleBadge.textContent = labelText;
+            badgeContainer.appendChild(singleBadge);
+          } 
+          else {
+            const total = dayData.details.length;
+            const DISPLAY_LIMIT = 6;
+            
+            for (let i = 0; i < total; i++) {
+              if (i === (DISPLAY_LIMIT - 1) && total > DISPLAY_LIMIT) {
+                const moreBadge = document.createElement("div");
+                moreBadge.className = "quiz-mini-rect rect-more";
+                moreBadge.textContent = "...";
+                badgeContainer.appendChild(moreBadge);
+                break;
+              }
+              
+              const item = dayData.details[i];
+              const miniRect = document.createElement("div");
+              const isItemSuccess = item.success === true || item.success === "true";
+              const isItemReviewed = item.isReviewed === true || item.isReviewed === "true";
+
+              let miniTheme = isItemSuccess ? 'rect-correct' : (isItemReviewed ? 'rect-reviewed' : 'rect-wrong');
+              miniRect.className = `quiz-mini-rect ${miniTheme}`;
+              badgeContainer.appendChild(miniRect);
+            }
           }
-          dayCell.appendChild(badge);
+          dayCell.appendChild(badgeContainer);
         }
         grid.appendChild(dayCell);
       }
     }
 
     function openNoteModal(dateStr) {
+      activeModalDateStr = dateStr;
       const modal = document.getElementById("noteModal");
       const title = document.getElementById("modalTitle");
       const body = document.getElementById("modalBody");
+      const notesTextArea = document.getElementById("modalCustomNotes");
+      const notesWrapper = document.getElementById("modalNotesWrapper");
       
       const dayData = quizHistory[dateStr];
       if (!dayData) return;
 
       title.textContent = `📝 ${dateStr} 학습 복습 노트`;
       body.innerHTML = "";
+      notesWrapper.style.display = "block"; 
 
-      const items = dayData.details || [{ success: dayData.success, question: dayData.question, explanation: dayData.explanation }];
+      let items = [];
+      if (dayData.details && Array.isArray(dayData.details)) {
+        items = dayData.details;
+      } else {
+        items = [{ success: dayData.success, question: dayData.question, explanation: dayData.explanation, answer: dayData.answer, options: dayData.options, isReviewed: dayData.isReviewed, isSaved: dayData.isSaved }];
+      }
 
       items.forEach((item, index) => {
         const itemDiv = document.createElement("div");
         itemDiv.className = "modal-item";
+        
+        let modalAnswerStr = "?";
+        if (item.answer !== undefined && item.options && item.options[item.answer]) {
+          modalAnswerStr = `${item.answer + 1}번 — "${item.options[item.answer].replace(/</g, "&lt;").replace(/>/g, "&gt;")}"`;
+        } else if (item.answer !== undefined) {
+          modalAnswerStr = `${item.answer + 1}번`;
+        }
+
+        const isItemSuccess = item.success === true || item.success === "true";
+        const isItemReviewed = item.isReviewed === true || item.isReviewed === "true";
+        const isItemSaved = item.isSaved === true || item.isSaved === "true";
+
+        let statusText = isItemSuccess ? "🟢 정답 패스" : (isItemReviewed ? "🟡 숙지 완료 (복습 완료)" : "🔴 다시 보기 대상(오답)");
+        let statusColor = isItemSuccess ? '#2f855a' : (isItemReviewed ? '#b45309' : '#c53030');
+
         itemDiv.innerHTML = `
-          <h4 style="margin-top:0; color:${item.success ? '#2f855a' : '#c53030'};">
-            ${index + 1}번 미션: ${item.success ? "🟢 정답 패스" : "🔴 다시 보기 대상(오답)"}
-          </h4>
-          <div class="quiz-question">${formatQuestionText(item.question)}</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:10px;">
+            <h4 style="margin-top:0; color:${statusColor}; flex:1; margin-bottom:0;">
+              ${index + 1}번 미션: ${statusText}
+            </h4>
+            <div style="display:flex; gap:6px;">
+              <button class="util-btn ${isItemSaved ? 'saved' : ''}" onclick="toggleSaveQuiz('${dateStr}', ${index}, false)">
+                ${isItemSaved ? '⭐ 보관됨' : '⭐ 문제 보관'}
+              </button>
+              ${(!isItemSuccess && !isItemReviewed) ? `<button class="done-btn" onclick="markAsReviewed('${dateStr}', ${index})">✅ 숙지 완료</button>` : ''}
+            </div>
+          </div>
+          <div class="quiz-question" style="margin-top:10px;">${formatQuestionText(item.question)}</div>
           <div class="quiz-explanation" style="background-color:#f7fafc; margin-top:8px; font-size:13px;">
-            <strong>해설:</strong><br>${item.explanation.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+            <div class="answer-highlight">📌 확정 정답: ${modalAnswerStr}</div>
+            <strong>해설:</strong><br>${(item.explanation || "해설 누락").replace(/</g, "&lt;").replace(/>/g, "&gt;")}
           </div>
         `;
         body.appendChild(itemDiv);
       });
 
+      notesTextArea.value = dayData.customNotes || "";
+
       modal.style.display = "flex";
       safeHighlightAll();
     }
 
+    // 📌 [신규 추가] 보관 상태 전환 스크립트 함수 (토글링 기능)
+    function toggleSaveQuiz(dateStr, index, isMainView = false) {
+      const dayData = quizHistory[dateStr];
+      if (!dayData) return;
+
+      if (dayData.details && Array.isArray(dayData.details)) {
+        if (dayData.details[index]) {
+          const currentStatus = dayData.details[index].isSaved || false;
+          dayData.details[index].isSaved = !currentStatus;
+        }
+      } else {
+        const currentStatus = dayData.isSaved || false;
+        dayData.isSaved = !currentStatus;
+      }
+
+      localStorage.setItem("quizHistory", JSON.stringify(quizHistory));
+      
+      if (isMainView) {
+        // 메인 화면 결과창 리프레시
+        const targetItem = dayData.details ? dayData.details[index] : dayData;
+        renderQuizResultView(targetItem.success, targetItem.question, targetItem.explanation, targetItem.answer, targetItem.options);
+      } else {
+        // 일반 달력 모달창 리프레시
+        openNoteModal(dateStr);
+      }
+    }
+
+    function markAsReviewed(dateStr, index) {
+      const dayData = quizHistory[dateStr];
+      if (!dayData) return;
+
+      if (dayData.details && Array.isArray(dayData.details)) {
+        if (dayData.details[index]) {
+          dayData.details[index].isReviewed = true;
+        }
+        const remainingWrong = dayData.details.filter(d => !d.success && !d.isReviewed);
+        if (remainingWrong.length === 0) {
+          dayData.isReviewed = true;
+        }
+      } else {
+        dayData.isReviewed = true;
+      }
+
+      localStorage.setItem("quizHistory", JSON.stringify(quizHistory));
+      alert("🎉 해당 문제를 오답노트에서 제외하고 완료(노란색) 상태로 변경했습니다.");
+      
+      openNoteModal(dateStr);
+      initCalendar();
+    }
+
+    function markAsReviewedFromCollection(dateStr, index) {
+      const dayData = quizHistory[dateStr];
+      if (!dayData) return;
+
+      if (dayData.details && Array.isArray(dayData.details)) {
+        if (dayData.details[index]) dayData.details[index].isReviewed = true;
+        const remainingWrong = dayData.details.filter(d => !d.success && !d.isReviewed);
+        if (remainingWrong.length === 0) dayData.isReviewed = true;
+      } else {
+        dayData.isReviewed = true;
+      }
+
+      localStorage.setItem("quizHistory", JSON.stringify(quizHistory));
+      
+      openWrongAnswersOnlyModal();
+      initCalendar();
+    }
+
+    function openWrongAnswersOnlyModal() {
+      activeModalDateStr = null; 
+      const modal = document.getElementById("noteModal");
+      const title = document.getElementById("modalTitle");
+      const body = document.getElementById("modalBody");
+      const notesWrapper = document.getElementById("modalNotesWrapper");
+
+      title.textContent = `🚨 전체 오답노트 정밀 복습 모음`;
+      body.innerHTML = "";
+      notesWrapper.style.display = "none"; 
+
+      let wrongCount = 0;
+      const dates = Object.keys(quizHistory).sort().reverse(); 
+      
+      dates.forEach(dateStr => {
+        const dayData = quizHistory[dateStr];
+        if (!dayData) return;
+
+        let items = [];
+        let isSingleMode = false;
+        if (dayData.details && Array.isArray(dayData.details)) {
+          items = dayData.details;
+        } else {
+          isSingleMode = true;
+          items = [{ success: dayData.success, question: dayData.question, explanation: dayData.explanation, answer: dayData.answer, options: dayData.options, isReviewed: dayData.isReviewed }];
+        }
+        
+        items.forEach((item, index) => {
+          const isWrong = (item.success === false || item.success === "false");
+          const isAlreadyReviewed = (item.isReviewed === true || item.isReviewed === "true");
+
+          if (isWrong && !isAlreadyReviewed) { 
+            wrongCount++;
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "modal-item";
+            
+            let modalAnswerStr = "?";
+            if (item.answer !== undefined && item.options && item.options[item.answer]) {
+              modalAnswerStr = `${item.answer + 1}번 — "${item.options[item.answer].replace(/</g, "&lt;").replace(/>/g, "&gt;")}"`;
+            } else if (item.answer !== undefined) {
+              modalAnswerStr = `${item.answer + 1}번`;
+            }
+
+            const targetIndex = isSingleMode ? 0 : index;
+
+            itemDiv.innerHTML = `
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-weight:bold; color:#e53e3e; font-size:14px;">🔥 취약지점 #${wrongCount}</span>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <span style="font-size:12px; color:#718096; background:#edf2f7; padding:2px 8px; border-radius:12px;">풀이일: ${dateStr}</span>
+                  <button class="done-btn" onclick="markAsReviewedFromCollection('${dateStr}', ${targetIndex})">✅ 숙지 완료</button>
+                </div>
+              </div>
+              <div class="quiz-question">${formatQuestionText(item.question)}</div>
+              <div class="quiz-explanation" style="background-color:#fffaf0; border-left:4px solid #dd6b20; font-size:13px; margin-top:8px;">
+                <div class="answer-highlight">📌 확정 정답: ${modalAnswerStr}</div>
+                <strong>오답 원인 극복 해설:</strong><br>${(item.explanation || "해설이 없습니다.").replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+              </div>
+            `;
+            body.appendChild(itemDiv);
+          }
+        });
+      });
+
+      if (wrongCount === 0) {
+        body.innerHTML = `<p style="text-align:center; padding:30px 0; color:#4a5568;">🎉 현재까지 밀린 오답이 전혀 없습니다! 모두 완벽하게 마스터하셨습니다.</p>`;
+      }
+
+      modal.style.display = "flex";
+      safeHighlightAll();
+    }
+
+    // 📌 [신규 추가] 보관함(★) 지정 문항만 따로 추출해 모아보기 열기
+    function openSavedQuizzesModal() {
+      activeModalDateStr = null; 
+      const modal = document.getElementById("noteModal");
+      const title = document.getElementById("modalTitle");
+      const body = document.getElementById("modalBody");
+      const notesWrapper = document.getElementById("modalNotesWrapper");
+
+      title.textContent = `📂 ⭐ 나만의 명품 문제 보관함`;
+      body.innerHTML = "";
+      notesWrapper.style.display = "none"; 
+
+      let savedCount = 0;
+      const dates = Object.keys(quizHistory).sort().reverse(); 
+      
+      dates.forEach(dateStr => {
+        const dayData = quizHistory[dateStr];
+        if (!dayData) return;
+
+        let items = [];
+        let isSingleMode = false;
+        if (dayData.details && Array.isArray(dayData.details)) {
+          items = dayData.details;
+        } else {
+          isSingleMode = true;
+          items = [{ success: dayData.success, question: dayData.question, explanation: dayData.explanation, answer: dayData.answer, options: dayData.options, isSaved: dayData.isSaved }];
+        }
+        
+        items.forEach((item, index) => {
+          const isItemSaved = (item.isSaved === true || item.isSaved === "true");
+
+          if (isItemSaved) { 
+            savedCount++;
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "modal-item";
+            
+            let modalAnswerStr = "?";
+            if (item.answer !== undefined && item.options && item.options[item.answer]) {
+              modalAnswerStr = `${item.answer + 1}번 — "${item.options[item.answer].replace(/</g, "&lt;").replace(/>/g, "&gt;")}"`;
+            } else if (item.answer !== undefined) {
+              modalAnswerStr = `${item.answer + 1}번`;
+            }
+
+            const targetIndex = isSingleMode ? 0 : index;
+
+            itemDiv.innerHTML = `
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-weight:bold; color:#319795; font-size:14px;">⭐ 보관 문항 #${savedCount}</span>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <span style="font-size:12px; color:#718096; background:#edf2f7; padding:2px 8px; border-radius:12px;">출처일: ${dateStr}</span>
+                  <button class="done-btn" style="background-color:#e53e3e;" onclick="removeFromSavedCollection('${dateStr}', ${targetIndex})">❌ 보관 해제</button>
+                </div>
+              </div>
+              <div class="quiz-question">${formatQuestionText(item.question)}</div>
+              <div class="quiz-explanation" style="background-color:#f7fafc; font-size:13px; margin-top:8px;">
+                <div class="answer-highlight">📌 확정 정답: ${modalAnswerStr}</div>
+                <strong>정밀 해설 데이터:</strong><br>${(item.explanation || "해설이 없습니다.").replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+              </div>
+            `;
+            body.appendChild(itemDiv);
+          }
+        });
+      });
+
+      if (savedCount === 0) {
+        body.innerHTML = `<p style="text-align:center; padding:30px 0; color:#4a5568;">📂 아직 보관함에 저장된 특별한 문제가 없습니다.<br>좋은 문제를 만나면 [⭐ 문제 보관] 버튼을 눌러보세요!</p>`;
+      }
+
+      modal.style.display = "flex";
+      safeHighlightAll();
+    }
+
+    // 📌 [신규 추가] 보관함 내부 전용 스크랩 즉시 해제 함수
+    function removeFromSavedCollection(dateStr, index) {
+      const dayData = quizHistory[dateStr];
+      if (!dayData) return;
+
+      if (dayData.details && Array.isArray(dayData.details)) {
+        if (dayData.details[index]) dayData.details[index].isSaved = false;
+      } else {
+        dayData.isSaved = false;
+      }
+
+      localStorage.setItem("quizHistory", JSON.stringify(quizHistory));
+      
+      // 보관함 팝업 화면 즉시 새로고침
+      openSavedQuizzesModal();
+    }
+
+    document.getElementById("saveNotesBtn").onclick = function() {
+      if (!activeModalDateStr || !quizHistory[activeModalDateStr]) return;
+      
+      const notesText = document.getElementById("modalCustomNotes").value;
+      quizHistory[activeModalDateStr].customNotes = notesText;
+      
+      localStorage.setItem("quizHistory", JSON.stringify(quizHistory));
+      alert("📝 메모가 안전하게 저장되었습니다.");
+    };
+
     function closeModal() {
       document.getElementById("noteModal").style.display = "none";
+      activeModalDateStr = null;
     }
 
     function calculateStats() {
@@ -698,23 +1125,23 @@ ${selectedLang} 언어를 기반으로 하며 난이도가 [${selectedDifficulty
           totalCorrect += dayData.correctCount;
         } else {
           totalQuestions += 1;
-          if (dayData.success) totalCorrect += 1;
+          if (dayData.success === true || dayData.success === "true") totalCorrect += 1;
         }
       });
 
-      const accuracy = Math.round((totalCorrect / totalQuestions) * 100);
+      const accuracy = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
       statsResult.innerHTML = `
         현재까지 총 <strong>${totalQuestions}문제</strong> 중 <strong>${totalCorrect}문제</strong> 클리어!<br>
         🎯 통합 코딩 테스트 성공률: <strong>${accuracy}%</strong>
       `;
     }
 
-    // 💡 초기 작동 시 오류 유발 요소 차단 제어 완료
     initCalendar();
     calculateStats();
 
     if (quizHistory[todayDateStr]) {
-      renderQuizResultView(quizHistory[todayDateStr].success, quizHistory[todayDateStr].question, quizHistory[todayDateStr].explanation);
+      const todayData = quizHistory[todayDateStr];
+      renderQuizResultView(todayData.success, todayData.question, todayData.explanation, todayData.answer, todayData.options);
     }
   </script>
 </body>
