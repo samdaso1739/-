@@ -1,0 +1,473 @@
+/* 기본 초기화 및 폰트 세팅 */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f6f8;
+  margin: 0;
+  padding: 20px; 
+}
+
+.container {
+  max-width: 700px;
+  margin: auto;
+  background-color: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h1, h2, h3 {
+  text-align: center;
+  color: #333;
+}
+
+/* 설정 필드 디자인 */
+.api-area {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px dashed #ccc;
+}
+
+.settings-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.settings-row:last-child {
+  margin-bottom: 0;
+}
+
+.settings-row label {
+  font-weight: bold; 
+  width: 140px;
+}
+
+select, input {
+  flex: 1;
+  padding: 12px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: white;
+}
+
+/* 퀴즈/테스트 구역 스타일 */
+.quiz-area {
+  background-color: #edf2f7;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.quiz-question {
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 15px;
+  white-space: pre-wrap;
+  background-color: #1d1f21;
+  color: #c5c8c6;
+  padding: 15px;
+  border-radius: 8px;
+  line-height: 1.6;
+}
+
+.quiz-question pre[class*="language-"] {
+  margin: 12px 0;
+  padding: 14px;
+  border-radius: 6px;
+  font-family: 'Fira Code', 'Courier New', Courier, monospace;
+  font-size: 14px;
+  background: #2d2d2d !important;
+}
+
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quiz-opt-btn {
+  padding: 12px; 
+  background-color: white;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 15px;
+  transition: background 0.2s, color 0.2s;
+  color: #2d3748 !important; 
+}
+
+.quiz-opt-btn:hover {
+  background-color: #4a5568; 
+  color: white !important;    
+}
+
+.quiz-explanation {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #fff;
+  border-left: 4px solid #4a5568;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #4a5568;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.answer-highlight {
+  font-size: 15px;
+  font-weight: bold;
+  color: #2b6cb0;
+  background-color: #ebf8ff;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  border-left: 4px solid #2b6cb0;
+  line-height: 1.4;
+}
+
+/* 캘린더 상단 조작 디자인 */
+.calendar-nav-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  gap: 10px;
+}
+
+.calendar-btn-group button {
+  padding: 8px 12px;
+  font-size: 13px;
+  background-color: #4a5568;
+}
+.calendar-btn-group button:hover {
+  background-color: #2d3748;
+}
+
+/* 하단 조건 필터 레이아웃 상자 */
+.filter-wrapper {
+  background: #edf2f7;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  gap: 15px;
+  justify-content: space-between;
+  box-sizing: border-box;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.filter-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-item label {
+  font-size: 13px;
+  font-weight: bold;
+  color: #4a5568;
+  white-space: nowrap;
+  width: auto;
+}
+
+.filter-item select {
+  padding: 8px;
+  font-size: 13px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e0;
+  width: 100%;
+}
+
+/* 캘린더 그리드 코어 디자인 */
+.calendar-container {
+  margin-top: 10px;
+  max-width: 700px;         
+  margin-left: auto;        
+  margin-right: auto;       
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  text-align: center;
+}
+
+.calendar-header {
+  font-weight: bold;
+  background-color: #e2e8f0;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.calendar-day {
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  min-height: 75px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  transition: background-color 0.2s;
+}
+
+.calendar-day.has-data {
+  cursor: pointer;
+}
+.calendar-day.has-data:hover {
+  background-color: #f7fafc;
+}
+
+.day-num {
+  font-size: 12px;
+  color: #718096;
+  text-align: left;
+}
+
+/* 배지 시스템 */
+.badge-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  justify-items: center;
+  margin-top: 5px;
+}
+
+.quiz-rect-badge {
+  font-size: 10px;
+  font-weight: bold;
+  border-radius: 4px;
+  grid-column: span 3;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.quiz-mini-rect {
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.rect-correct { background-color: #c6f6d5; color: #22543d; border: 1px solid #9ae6b4; }
+.rect-wrong { background-color: #fed7d7; color: #742a2a; border: 1px solid #feb2b2; }
+.rect-reviewed { background-color: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+.rect-more { background-color: #e2e8f0; color: #4a5568; border: 1px solid #cbd5e0; }
+
+/* 공통 컴포넌트 */
+button {
+  padding: 12px 15px;
+  font-size: 15px;
+  border: none;
+  border-radius: 8px;
+  background-color: #4CAF50;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+button:hover { background-color: #45a049; }
+
+.result {
+  margin-top: 15px;
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* 모달 레이어 스펙 */
+.modal {
+  display: none; 
+  position: fixed; 
+  z-index: 1000; 
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  align-items: center;
+  justify-content: center;
+}
+.modal-content {
+  background-color: white;
+  padding: 25px;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+.close-btn {
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #aaa;
+}
+.close-btn:hover { color: #333; }
+.modal-item {
+  border-bottom: 1px dashed #cbd5e0;
+  padding: 15px 0;
+  position: relative;
+}
+.modal-item:last-child { border-bottom: none; }
+
+.modal-notes-area {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 2px solid #e2e8f0;
+}
+.modal-notes-area textarea {
+  width: 100%;
+  height: 80px;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e0;
+  font-size: 14px;
+  box-sizing: border-box;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.done-btn {
+  padding: 5px 10px;
+  font-size: 12px;
+  background-color: #d97706;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+}
+.done-btn:hover { background-color: #b45309; }
+
+.util-btn {
+  padding: 5px 10px;
+  font-size: 12px;
+  background-color: #2b6cb0;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+}
+.util-btn:hover { background-color: #2c5282; }
+.util-btn.saved { background-color: #ecc94b; color: #744210; font-weight: bold; }
+
+/* 유틸리티 성격 속성 배지 */
+.difficulty-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: bold;
+  border-radius: 4px;
+  color: #ffffff;
+}
+.diff-easy { background-color: #2ecc71; }   
+.diff-medium { background-color: #f1c40f; color: #333; } 
+.diff-hard { background-color: #e74c3c; }   
+
+.badge-lang {
+  background-color: #34495e;
+  color: #fff;
+  display: inline-block;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: bold;
+  border-radius: 4px;
+}
+
+.badge-concept {
+  background-color: #7f8c8d;
+  color: #fff;
+  display: inline-block;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: bold;
+  border-radius: 4px;
+}
+
+/* 아코디언 토글 헤더 */
+.toggle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #4a5568;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+.toggle-header:hover { background-color: #2d3748; }
+.toggle-icon { font-size: 12px; transition: transform 0.2s; }
+.toggle-content { display: block; }
+.toggle-content.collapsed { display: none; }
+
+/* 📱 모바일 디바이스 최적화 미디어 쿼리 */
+@media (max-width: 600px) {
+  body { padding: 10px; }
+  .container { padding: 15px; }
+
+  .settings-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .settings-row label { width: 100%; font-size: 14px; }
+  select, input { width: 100%; box-sizing: border-box; }
+  .settings-row button { width: 100%; margin-top: 4px; }
+
+  .filter-wrapper {
+    flex-direction: column !important;
+    gap: 10px !important;
+    padding: 10px !important;
+  }
+  .filter-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+
+  .calendar-day { min-height: 55px; padding: 4px; }
+  .day-num { font-size: 11px; }
+  .quiz-rect-badge { font-size: 9px; height: 15px; }
+  .badge-container { gap: 2px; }
+  .quiz-mini-rect { width: 10px; height: 10px; font-size: 8px; }
+
+  .modal-content { width: 95%; padding: 15px; max-height: 90vh; }
+  .modal-item > div[style*="display:flex"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  .modal-item div[style*="display:flex"] > div[style*="display:flex"] { width: 100%; }
+}
