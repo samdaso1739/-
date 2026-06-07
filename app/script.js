@@ -115,6 +115,7 @@ function saveDifficulty() {
 }
 
 // Gemini API 퀴즈 통신 구문
+// Gemini API 퀴즈 통신 구문 (스포일러 방지 및 로딩 연출 버전)
 async function fetchTodayQuiz() {
   if (!geminiApiKey) { alert("먼저 Gemini API 키를 등록하고 저장해주세요!"); return; }
   if (isQuizLoading) return;
@@ -128,30 +129,49 @@ async function fetchTodayQuiz() {
   }
 
   const quizContentDiv = document.getElementById("quizContent");
-  quizContentDiv.innerHTML = `<p style='text-align:center;'>🤖 Gemini가 문제를 엄선하는 중입니다... (중복 요청 금지)</p>`;
+  // 초기 UI 세팅 (스포일러를 방지하고 깔끔한 대기 상태 유지)
+  quizContentDiv.innerHTML = `
+    <div style="margin-bottom: 10px; display:flex; gap:5px; align-items:center;">
+      <span class="badge-lang">${selectedLang}</span>
+      <span class="difficulty-badge ${getDifficultyClass(selectedDifficulty)}">[${selectedDifficulty}]</span>
+    </div>
+    <div class="quiz-question" id="stream-code-area" style="min-height:120px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+      <p style="margin:0 0 10px 0; font-size:16px; font-weight:bold; color:#fff;">🤖 AI가 오늘의 미션을 출제하고 있습니다</p>
+      <p style="margin:0; font-size:13px; color:#a0aec0;" id="loading-dots">잠시만 기다려주세요...</p>
+    </div>
+  `;
 
+  const loadingDots = document.getElementById("loading-dots");
   isQuizLoading = true;
+
+  // 로딩 문구 애니메이션 효과 (점 세 개가 깜빡이는 효과)
+  let dotCount = 0;
+  const dotInterval = setInterval(() => {
+    if (!loadingDots) return;
+    dotCount = (dotCount + 1) % 4;
+    loadingDots.textContent = "잠시만 기다려주세요" + ".".repeat(dotCount);
+  }, 400);
 
   const currentList = languageTopics[selectedLang] || languageTopics["JavaScript"];
   const chosenTopic = currentList[Math.floor(Math.random() * currentList.length)];
 
   let difficultyGuideline = "";
   if (selectedDifficulty === "쉬움") {
-    difficultyGuideline = `
-    - 난이도 수준: 기초 문법 활용 및 단순 출력 결과 예측
-    - 문제 스타일: 코드의 실행 결과(Output)를 맞추거나, 올바른 문법 표현식을 고르는 단답형/객관식 스타일`;
+    difficultyGuideline = `- 난이도 수준: 기초 문법 활용 및 단순 출력 결과 예측
+  - 문제 스타일: 코드의 실행 결과(Output)를 맞추거나, 올바른 문법 표현식을 고르는 스타일
+  - 해설 분량 가이드: 핵심만 3줄 이내로 아주 짧고 간결하게 요약하세요.`;
   } else if (selectedDifficulty === "보통") {
-    difficultyGuideline = `
-    - 난이도 수준: 알고리즘 기초, 실무 응용, 예외 처리 활용
-    - 문제 스타일: 주어진 알고리즘 함수가 특정 입력값을 받았을 때의 리턴값 예측, 혹은 코드 내 빈칸(Blank)에 들어갈 올바른 로직 선택 스타일`;
+    difficultyGuideline = `- 난이도 수준: 알고리즘 기초, 실무 응용, 예외 처리 활용
+  - 문제 스타일: 주어진 알고리즘 함수가 특정 입력값을 받았을 때의 리턴값 예측, 혹은 코드 내 빈칸(Blank)에 들어갈 올바른 로직 선택 스타일
+  - 해설 분량 가이드: 중요 로직 위주로 5줄 이내로 요약하세요.`;
   } else if (selectedDifficulty === "어려움") {
-    difficultyGuideline = `
-    - 난이도 수준: 심화 자료구조, 시간/공간 복잡도 최적화, 비동기/메모리 에지 케이스
-    - 문제 스타일: 소스 코드의 성능 저하 원인(메모리 누수, 무한 루프 등) 분석, 대규모 데이터 처리 시의 올바른 최적화 기법, 혹은 복잡한 구조의 실행 순서 예측 스타일`;
+    difficultyGuideline = `- 난이도 수준: 심화 자료구조, 시간/공간 복잡도 최적화, 비동기/메모리 에지 케이스
+  - 문제 스타일: 소스 코드의 성능 저하 원인 분석, 대규모 데이터 처리 시의 올바른 최적화 기법 스타일
+  - 해설 분량 가이드: 원리와 원인 분석이 중요하므로, 15줄 내외로 구체적이고 깊이 있는 라인별 상세 분석을 제공하세요.`;
   }
 
   const prompt = `당신은 대기업 및 빅테크 기업의 코딩 테스트 전문 출제위원입니다.
-단순히 "개념의 정의"를 묻는 말장난 문제(예: 클로저란 무엇인가?)는 절대 출제하지 마십시오.
+단순히 "개념의 정의"를 묻는 말장난 문제는 절대 출제하지 마십시오.
 반드시 실전 변별력이 있는 '소스 코드 분석형' 또는 '구현형 알고리즘' 문제를 딱 1개만 출제해 주세요.
 
 [출제 필수 조건]
@@ -164,17 +184,21 @@ async function fetchTodayQuiz() {
 2. 선지("options")는 개념적 설명이 아닌, 코드의 결과값 또는 빈칸에 들어갈 소스 코드 조각 등으로 구성하여 실전 느낌을 내세요.
 3. 정답 인덱스(answer) 검산을 철저히 실행해 오류가 없도록 하십시오. (0, 1, 2, 3 중 하나)
 4. "concept" 필드에는 해당 세부 주제 이름인 "${chosenTopic}"을 그대로 넣어주세요.
+5. 너무 뻔한 선택지는 피하고, 오답 선지들도 모두 그럴듯하게 보여서 실제로 헷갈릴 수 있도록 만들어주세요.
+6. 정답 선지는 1번, 2번, 3번, 4번 골고루 섞어서 출제해 주세요. (예: 정답이 항상 1번이거나 4번에 몰리지 않도록)
+
+마지막으로 응답은 마크다운 수식이나 불필요한 설명 없이 아래 명시된 오직 순수한 단일 JSON 객체 하나만 생성해야 합니다.
 
 {
   "question": "주어진 세부 주제를 활용한 실전 코딩 테스트 문제 설명과 소스 코드 영역입니다.",
   "options": ["1번 선지", "2번 선지", "3번 선지", "4번 선지"],
   "answer": 0,
-  "explanation": "이 코드가 왜 그렇게 동작하는지, 오답 선지들은 왜 틀렸는지에 대한 구체적인 라인별 코드 분석 해설을 작성하세요.",
+  "explanation": "위에서 제시한 [요구 난이도 및 스타일 가이드]의 '해설 분량 가이드' 규칙을 완벽히 준수하여 정답의 이유와 오답 분석을 작성하세요.",
   "concept": "${chosenTopic}"
 }`;
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?key=${geminiApiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
@@ -184,15 +208,69 @@ async function fetchTodayQuiz() {
     });
 
     if (!response.ok) { throw new Error(`HTTP 에러: ${response.status}`); }
-    const data = await response.json();
-    let rawText = data.candidates[0].content.parts[0].text.trim();
-    
-    const quizData = JSON.parse(rawText);
-    if(!quizData.concept) quizData.concept = chosenTopic;
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let accumulatedText = ""; 
+    let buffer = "";
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      
+      try {
+        let cleanedBuffer = buffer.trim();
+        if (!cleanedBuffer.startsWith("[")) cleanedBuffer = "[" + cleanedBuffer;
+        if (!cleanedBuffer.endsWith("]")) cleanedBuffer = cleanedBuffer + "]";
+        
+        const chunks = JSON.parse(cleanedBuffer);
+        let currentProgressText = "";
+        
+        chunks.forEach(chunk => {
+          if (chunk.candidates?.[0]?.content?.parts?.[0]?.text) {
+            currentProgressText += chunk.candidates[0].content.parts[0].text;
+          }
+        });
+        
+        // 데이터는 뒤에서 계속 모으되, 화면(textContent)에는 뿌리지 않고 가만히 둡니다.
+        accumulatedText = currentProgressText; 
+      } catch {
+        // 불완전한 chunk 처리용 예외 처리
+      }
+    }
+
+    if (buffer.trim()) {
+      try {
+        let finalCleaned = buffer.trim();
+        if (!finalCleaned.startsWith("[")) finalCleaned = "[" + finalCleaned;
+        if (!finalCleaned.endsWith("]")) finalCleaned = finalCleaned + "]";
+        const chunks = JSON.parse(finalCleaned);
+        let finalProgressText = "";
+        chunks.forEach(chunk => {
+          if (chunk.candidates?.[0]?.content?.parts?.[0]?.text) {
+            finalProgressText += chunk.candidates[0].content.parts[0].text;
+          }
+        });
+        if (finalProgressText) accumulatedText = finalProgressText;
+      } catch {}
+    }
+
+    // 타이머 종료 및 로딩 인터벌 정리
+    clearInterval(dotInterval);
+
+    // 마침내 완결된 알맹이 텍스트를 최종 파싱
+    const quizData = JSON.parse(accumulatedText.trim());
+    if (!quizData.concept) quizData.concept = chosenTopic;
     
     currentQuizData = quizData; 
+    
+    // 온전해진 데이터를 한 번에 싹 렌더링
     renderQuiz(quizData);
+
   } catch (error) {
+    clearInterval(dotInterval);
     console.error(error);
     let errorMsg = error.message;
     if (errorMsg.includes("429")) {
