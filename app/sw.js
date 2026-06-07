@@ -1,12 +1,17 @@
-const CACHE_NAME = 'ai-code-note-v1';
-// 캐싱할 파일 목록 (경로에 맞게 수정 가능)
+const CACHE_NAME = 'ai-code-note-v2';
+
+// 앞뒤 슬래시를 제외한 순수 저장소 이름만 적는 것이 경로 꼬임을 방지하기 좋습니다.
+const REPO_NAME = 'AI_centered_world_assignmnet'; 
+
 const FILES_TO_CACHE = [
-  './index.html',
-  './style.css',
-  './script.js',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
+  `/${REPO_NAME}/`,
+  `/${REPO_NAME}/index.html`,
+  `/${REPO_NAME}/style.css`,
+  `/${REPO_NAME}/script.js`,
+  `/${REPO_NAME}/manifest.json`,
+  `/${REPO_NAME}/icon-192.png`,
+  `/${REPO_NAME}/icon-512.png`,
+  `/${REPO_NAME}/sw.js` // 서비스 워커 본인도 캐싱 목록에 넣어주는 것이 안전합니다.
 ];
 
 // 서비스 워커 설치 및 파일 캐싱
@@ -14,7 +19,8 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[Service Worker] 파일 사전 캐싱 중...');
-      return cache.addAll(FILES_TO_CACHE);
+      // 존재하지 않는 파일이 하나라도 있으면 전체 캐싱이 실패(reject)하므로 주의하세요!
+      return cache.addAll(FILES_TO_CACHE); 
     })
   );
   self.skipWaiting();
@@ -41,7 +47,6 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
-      // 캐시에 있으면 캐시 반환, 없으면 네트워크에서 가져옴
       return response || fetch(event.request);
     })
   );
