@@ -66,12 +66,13 @@ select, input {
   font-size: 15px;
   font-weight: 500;
   margin-bottom: 15px;
-  white-space: pre-wrap;
   background-color: #1d1f21;
   color: #c5c8c6;
   padding: 15px;
   border-radius: 8px;
   line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
 .quiz-question pre[class*="language-"] {
@@ -81,6 +82,9 @@ select, input {
   font-family: 'Fira Code', 'Courier New', Courier, monospace;
   font-size: 14px;
   background: #2d2d2d !important;
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
+  overflow-x: visible !important; 
 }
 
 .quiz-options {
@@ -116,6 +120,7 @@ select, input {
   color: #4a5568;
   line-height: 1.6;
   white-space: pre-wrap;
+  word-break: break-all;
 }
 
 .answer-highlight {
@@ -134,9 +139,21 @@ select, input {
 .calendar-nav-wrapper {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 15px;
   gap: 10px;
+}
+
+.calendar-btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.calendar-btn-row {
+  display: flex;
+  gap: 4px;
 }
 
 .calendar-btn-group button {
@@ -434,8 +451,38 @@ button:hover { background-color: #45a049; }
 
 /* 📱 모바일 디바이스 최적화 미디어 쿼리 */
 @media (max-width: 600px) {
-  body { padding: 10px; }
-  .container { padding: 15px; }
+  body { padding: 4px; }
+  
+  /* 메인 컨테이너 양옆 마진 밀착 */
+  .container { padding: 8px; border-radius: 6px; }
+
+  /* [핵심 수정] 검은색 코드창 최대화 */
+  .quiz-area { 
+    padding: 0px !important;       /* 겉면 회색 상자의 여백을 완전히 파괴 */
+    background-color: transparent; /* 회색 배경 숨김 처리 */
+  }
+  
+  .quiz-question { 
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 8px !important;  /* 내부 글자 여백 최소화 */
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    border-radius: 6px !important; /* 꽉 차되 모서리는 부드럽게 */
+    font-size: 12px !important;    /* 폰트 크기 최적화 */
+  }
+
+  /* 코드 라이트너 플러그인이 깔려있을 경우를 대비한 매칭 */
+  .quiz-question pre[class*="language-"] {
+    padding: 10px 6px !important;
+    font-size: 11.5px !important;
+    margin: 4px 0 !important;
+  }
+
+  /* 선택지 버튼은 다시 보기 편하게 적당한 여백 부여 */
+  .quiz-options {
+    padding: 10px 4px 0 4px;
+  }
 
   .settings-row {
     flex-direction: column;
